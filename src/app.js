@@ -2,8 +2,9 @@ const path = require('path');
 const express = require('express');
 const multer = require('multer');
 const db = require('./db');
-const { parseAttendanceCsv, decodeCsvBuffer } = require('./csv');
+const { parseAttendanceCsv, decodeCsvBuffer, parseDateFromFilename } = require('./csv');
 
+const MAX_IMPORT_FILES = 3;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
 const app = express();
@@ -71,15 +72,16 @@ app.get('/committees/:id', (req, res) => {
     .all(committee.id);
 
   const importError = req.query.import_error || null;
-  const importResult = req.query.imported
-    ? {
-        total: Number(req.query.total) || 0,
-        present: Number(req.query.present) || 0,
-        created: Number(req.query.created) || 0,
-      }
-    : null;
+  let importSummary = null;
+  if (req.query.import_summary) {
+    try {
+      importSummary = JSON.parse(req.query.import_summary);
+    } catch {
+      importSummary = null;
+    }
+  }
 
-  res.render('committee', { committee, members, meetings, importError, importResult });
+  res.render('committee', { committee, members, meetings, importError, importSummary });
 });
 
 app.post('/committees/:id/members', (req, res) => {
@@ -165,87 +167,104 @@ app.post('/committees/:id/meetings/:meetingId/delete', (req, res) => {
   res.redirect(`/committees/${committee.id}`);
 });
 
-// ---- 出欠CSVインポート ----
-app.post('/committees/:id/import', upload.single('csv'), (req, res) => {
+// ---- 出欠CSVインポート（最大3ファイル同時取り込み） ----
+app.post('/committees/:id/import', upload.array('csv', MAX_IMPORT_FILES), (req, res) => {
   const committee = getCommitteeOr404(req, res);
   if (!committee) return;
 
-  const meetingDate = (req.body.meeting_date || '').trim();
+  // multer/busboyはmultipartのファイル名ヘッダーをlatin1として解釈するため、
+  // 日本語ファイル名が文字化けする。UTF-8として読み直す。
+  const files = (req.files || []).map((f) => ({
+    ...f,
+    originalname: Buffer.from(f.originalname, 'latin1').toString('utf8'),
+  }));
+  const fallbackDate = (req.body.meeting_date || '').trim();
   const meetingTitle = (req.body.title || '').trim();
+  const currentYear = new Date().getFullYear();
 
-  if (!meetingDate) {
+  if (files.length === 0) {
     return res.redirect(
-      `/committees/${committee.id}?import_error=${encodeURIComponent('開催日を指定してください')}`
-    );
-  }
-  if (!req.file) {
-    return res.redirect(
-      `/committees/${committee.id}?import_error=${encodeURIComponent('CSVファイルを選択してください')}`
+      `/committees/${committee.id}?import_error=${encodeURIComponent('CSVファイルを選択してください（最大3ファイル）')}`
     );
   }
 
-  let records;
-  try {
-    const text = decodeCsvBuffer(req.file.buffer);
-    records = parseAttendanceCsv(text);
-  } catch (e) {
-    return res.redirect(
-      `/committees/${committee.id}?import_error=${encodeURIComponent(e.message)}`
-    );
-  }
+  const findMember = db.prepare(
+    'SELECT * FROM members WHERE committee_id = ? AND name = ?'
+  );
+  const insertMember = db.prepare(
+    'INSERT INTO members (committee_id, name, role, company) VALUES (?, ?, ?, ?)'
+  );
+  const findMeeting = db.prepare(
+    'SELECT * FROM meetings WHERE committee_id = ? AND meeting_date = ?'
+  );
+  const insertMeeting = db.prepare(
+    'INSERT INTO meetings (committee_id, meeting_date, title) VALUES (?, ?, ?)'
+  );
+  const upsertAttendance = db.prepare(
+    `INSERT INTO attendance (meeting_id, member_id, present) VALUES (?, ?, ?)
+     ON CONFLICT(meeting_id, member_id) DO UPDATE SET present = excluded.present`
+  );
 
+  const results = [];
   const tx = db.transaction(() => {
-    let meeting = db
-      .prepare('SELECT * FROM meetings WHERE committee_id = ? AND meeting_date = ?')
-      .get(committee.id, meetingDate);
-    if (!meeting) {
-      const result = db
-        .prepare(
-          'INSERT INTO meetings (committee_id, meeting_date, title) VALUES (?, ?, ?)'
-        )
-        .run(committee.id, meetingDate, meetingTitle || null);
-      meeting = { id: result.lastInsertRowid };
-    }
+    for (const file of files) {
+      const detectedDate = parseDateFromFilename(file.originalname, currentYear);
+      const meetingDate = detectedDate || fallbackDate;
 
-    const findMember = db.prepare(
-      'SELECT * FROM members WHERE committee_id = ? AND name = ?'
-    );
-    const insertMember = db.prepare(
-      'INSERT INTO members (committee_id, name, role, company) VALUES (?, ?, ?, ?)'
-    );
-    const upsertAttendance = db.prepare(
-      `INSERT INTO attendance (meeting_id, member_id, present) VALUES (?, ?, ?)
-       ON CONFLICT(meeting_id, member_id) DO UPDATE SET present = excluded.present`
-    );
-
-    let createdMembers = 0;
-    let presentCount = 0;
-    for (const rec of records) {
-      let member = findMember.get(committee.id, rec.name);
-      if (!member) {
-        const result = insertMember.run(
-          committee.id,
-          rec.name,
-          rec.role || null,
-          rec.company || null
-        );
-        member = { id: result.lastInsertRowid };
-        createdMembers++;
+      if (!meetingDate) {
+        results.push({
+          filename: file.originalname,
+          error: 'ファイル名から開催日を判定できず、開催日欄も未入力のため取り込めませんでした',
+        });
+        continue;
       }
-      upsertAttendance.run(meeting.id, member.id, rec.present ? 1 : 0);
-      if (rec.present) presentCount++;
+
+      let records;
+      try {
+        const text = decodeCsvBuffer(file.buffer);
+        records = parseAttendanceCsv(text);
+      } catch (e) {
+        results.push({ filename: file.originalname, error: e.message });
+        continue;
+      }
+
+      let meeting = findMeeting.get(committee.id, meetingDate);
+      if (!meeting) {
+        const result = insertMeeting.run(committee.id, meetingDate, meetingTitle || null);
+        meeting = { id: result.lastInsertRowid };
+      }
+
+      let createdMembers = 0;
+      let presentCount = 0;
+      for (const rec of records) {
+        let member = findMember.get(committee.id, rec.name);
+        if (!member) {
+          const result = insertMember.run(
+            committee.id,
+            rec.name,
+            rec.role || null,
+            rec.company || null
+          );
+          member = { id: result.lastInsertRowid };
+          createdMembers++;
+        }
+        upsertAttendance.run(meeting.id, member.id, rec.present ? 1 : 0);
+        if (rec.present) presentCount++;
+      }
+
+      results.push({
+        filename: file.originalname,
+        meetingDate,
+        dateSource: detectedDate ? 'filename' : 'form',
+        total: records.length,
+        present: presentCount,
+        created: createdMembers,
+      });
     }
-
-    return { total: records.length, presentCount, createdMembers };
   });
+  tx();
 
-  const summary = tx();
-  const qs = new URLSearchParams({
-    imported: '1',
-    total: String(summary.total),
-    present: String(summary.presentCount),
-    created: String(summary.createdMembers),
-  });
+  const qs = new URLSearchParams({ import_summary: JSON.stringify(results) });
   res.redirect(`/committees/${committee.id}?${qs.toString()}`);
 });
 
@@ -419,7 +438,18 @@ app.get('/ranking', (req, res) => {
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    return res.status(400).send(`アップロードエラー: ${err.message}`);
+    const message =
+      err.code === 'LIMIT_UNEXPECTED_FILE'
+        ? `CSVファイルは最大${MAX_IMPORT_FILES}件まで同時に選択できます`
+        : err.message;
+    const match = req.originalUrl.match(/^\/committees\/(\d+)\/import/);
+    const committeeId = match ? match[1] : null;
+    if (committeeId) {
+      return res.redirect(
+        `/committees/${committeeId}?import_error=${encodeURIComponent(message)}`
+      );
+    }
+    return res.status(400).send(`アップロードエラー: ${message}`);
   }
   next(err);
 });

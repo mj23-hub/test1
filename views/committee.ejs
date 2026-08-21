@@ -11,9 +11,21 @@
 <% if (typeof importError !== 'undefined' && importError) { %>
   <div class="banner banner-error"><%= importError %></div>
 <% } %>
-<% if (typeof importResult !== 'undefined' && importResult) { %>
-  <div class="banner banner-success">
-    CSVを読み込みました。全<%= importResult.total %>件（出席 <%= importResult.present %>名 / 新規委員登録 <%= importResult.created %>名）
+<% if (typeof importSummary !== 'undefined' && importSummary && importSummary.length > 0) { %>
+  <div class="banner <%= importSummary.some(r => r.error) ? 'banner-error' : 'banner-success' %>">
+    <ul class="import-summary-list">
+      <% importSummary.forEach(r => { %>
+        <li>
+          <strong><%= r.filename %></strong>:
+          <% if (r.error) { %>
+            <%= r.error %>
+          <% } else { %>
+            開催日 <%= r.meetingDate %><%= r.dateSource === 'filename' ? '（ファイル名から自動判定）' : '（入力欄の値を使用）' %> —
+            全<%= r.total %>件（出席 <%= r.present %>名 / 新規委員登録 <%= r.created %>名）
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
   </div>
 <% } %>
 
@@ -84,12 +96,14 @@
   <p class="hint">
     1行目に見出し（<code>氏名</code> と <code>出席</code> または <code>回答状況</code> の列）が必要です。
     出席は <code>○</code>・<code>参加</code>、欠席は空欄・<code>×</code>・<code>不参加</code> と判定します。
-    <code>役職名</code>・<code>事業所名</code> 列があれば、CSVにしかいない新しい委員も自動で登録します。
+    <code>役職名</code>・<code>事業所名</code> 列があれば、CSVにしかいない新しい委員も自動で登録します。<br>
+    開催日はファイル名から自動判定します（例: <code>0818.csv</code> → 8月18日、<code>20260818.csv</code> → 2026年8月18日）。
+    ファイル名から判定できない場合のみ、下の「開催日」欄の値を使用します。最大<%= 3 %>ファイルまで同時に選択できます。
   </p>
   <form method="post" action="/committees/<%= committee.id %>/import" enctype="multipart/form-data" class="stack-form">
-    <input type="date" name="meeting_date" required title="対象の開催日（既存の日付なら上書き、新しい日付なら自動作成）">
+    <input type="date" name="meeting_date" title="ファイル名から開催日を判定できなかった場合に使う開催日（任意）">
     <input type="text" name="title" placeholder="議題・備考（任意・新規作成時のみ使用）">
-    <input type="file" name="csv" accept=".csv,text/csv" required>
+    <input type="file" name="csv" accept=".csv,text/csv" multiple required>
     <button type="submit">CSVをインポート</button>
   </form>
 </section>
