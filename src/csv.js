@@ -122,4 +122,45 @@ function parseAttendanceCsv(text) {
   return records;
 }
 
-module.exports = { parseCsv, parseAttendanceCsv, isPresent, decodeCsvBuffer };
+// ファイル名から開催日を推測する（例: "0818_出席.csv" → 8月18日、"20260818.csv" → 2026年8月18日）
+// year: ファイル名に年が無い場合に使う年（通常は現在の年）
+function parseDateFromFilename(filename, year) {
+  const base = (filename || '').replace(/\.[^.]+$/, '');
+  const digitRuns = base.match(/\d+/g) || [];
+
+  for (const run of digitRuns) {
+    if (run.length >= 8) {
+      const y = Number(run.slice(0, 4));
+      const m = Number(run.slice(4, 6));
+      const d = Number(run.slice(6, 8));
+      if (isValidDate(y, m, d)) return formatDate(y, m, d);
+    }
+  }
+  for (const run of digitRuns) {
+    if (run.length === 4) {
+      const m = Number(run.slice(0, 2));
+      const d = Number(run.slice(2, 4));
+      if (isValidDate(year, m, d)) return formatDate(year, m, d);
+    }
+  }
+  return null;
+}
+
+function isValidDate(y, m, d) {
+  if (!(m >= 1 && m <= 12)) return false;
+  if (!(d >= 1 && d <= 31)) return false;
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+}
+
+function formatDate(y, m, d) {
+  return `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+module.exports = {
+  parseCsv,
+  parseAttendanceCsv,
+  isPresent,
+  decodeCsvBuffer,
+  parseDateFromFilename,
+};
