@@ -1,0 +1,41 @@
+<%- include('partials/header', { title: '委員会一覧 | 委員会出席カウントシステム' }) %>
+
+<h1>委員会一覧</h1>
+
+<table class="list-table">
+  <thead>
+    <tr>
+      <th>委員会名</th>
+      <th>委員数</th>
+      <th>開催回数</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% committees.forEach(c => { %>
+      <tr>
+        <td><a href="/committees/<%= c.id %>"><%= c.name %></a></td>
+        <td><%= c.member_count %></td>
+        <td><%= c.meeting_count %></td>
+        <td>
+          <a href="/committees/<%= c.id %>/report">月別集計</a>
+          <form method="post" action="/committees/<%= c.id %>/delete" class="inline-form"
+                onsubmit="return confirm('「<%= c.name %>」を削除します。よろしいですか？');">
+            <button type="submit" class="danger">削除</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    <% if (committees.length === 0) { %>
+      <tr><td colspan="4" class="empty">委員会がまだ登録されていません</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<h2>委員会を追加</h2>
+<form method="post" action="/committees" class="stack-form">
+  <input type="text" name="name" placeholder="委員会名（例: 総務委員会）" required>
+  <button type="submit">追加</button>
+</form>
+
+<%- include('partials/footer') %>

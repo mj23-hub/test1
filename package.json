@@ -1,0 +1,16 @@
+{
+  "name": "committee-attendance",
+  "version": "1.0.0",
+  "description": "毎月の委員会出席をカウントするWebシステム",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2"
+  }
+}

@@ -1,0 +1,64 @@
+<%- include('partials/header', { title: committee.name + ' | 委員会出席カウントシステム' }) %>
+
+<p><a href="/">&laquo; 委員会一覧へ戻る</a></p>
+<h1><%= committee.name %></h1>
+<p><a href="/committees/<%= committee.id %>/report">この委員会の月別出席集計を見る &raquo;</a></p>
+
+<section>
+  <h2>委員</h2>
+  <table class="list-table">
+    <thead><tr><th>氏名</th><th></th></tr></thead>
+    <tbody>
+      <% members.forEach(m => { %>
+        <tr>
+          <td><%= m.name %></td>
+          <td>
+            <form method="post" action="/committees/<%= committee.id %>/members/<%= m.id %>/delete" class="inline-form"
+                  onsubmit="return confirm('「<%= m.name %>」を削除します。よろしいですか？');">
+              <button type="submit" class="danger">削除</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (members.length === 0) { %>
+        <tr><td colspan="2" class="empty">委員が登録されていません</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+  <form method="post" action="/committees/<%= committee.id %>/members" class="stack-form">
+    <input type="text" name="name" placeholder="委員の氏名" required>
+    <button type="submit">委員を追加</button>
+  </form>
+</section>
+
+<section>
+  <h2>開催日</h2>
+  <table class="list-table">
+    <thead><tr><th>開催日</th><th>議題・備考</th><th>出席数</th><th></th></tr></thead>
+    <tbody>
+      <% meetings.forEach(mt => { %>
+        <tr>
+          <td><a href="/committees/<%= committee.id %>/meetings/<%= mt.id %>"><%= mt.meeting_date %></a></td>
+          <td><%= mt.title || '' %></td>
+          <td><%= mt.present_count %> / <%= members.length %></td>
+          <td>
+            <form method="post" action="/committees/<%= committee.id %>/meetings/<%= mt.id %>/delete" class="inline-form"
+                  onsubmit="return confirm('この開催日を削除します。よろしいですか？');">
+              <button type="submit" class="danger">削除</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (meetings.length === 0) { %>
+        <tr><td colspan="4" class="empty">開催日が登録されていません</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+  <form method="post" action="/committees/<%= committee.id %>/meetings" class="stack-form">
+    <input type="date" name="meeting_date" required>
+    <input type="text" name="title" placeholder="議題・備考（任意）">
+    <button type="submit">開催日を追加</button>
+  </form>
+</section>
+
+<%- include('partials/footer') %>

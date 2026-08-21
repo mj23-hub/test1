@@ -1,0 +1,55 @@
+<%
+  const prevDate = new Date(year, month - 2, 1);
+  const nextDate = new Date(year, month, 1);
+  const prevYear = prevDate.getFullYear();
+  const prevMonth = prevDate.getMonth() + 1;
+  const nextYear = nextDate.getFullYear();
+  const nextMonth = nextDate.getMonth() + 1;
+%>
+<%- include('partials/header', { title: year + '年' + month + '月の出席集計 | ' + committee.name }) %>
+
+<p><a href="/committees/<%= committee.id %>">&laquo; <%= committee.name %> へ戻る</a></p>
+<h1><%= committee.name %> — <%= year %>年<%= month %>月の出席集計</h1>
+
+<div class="month-nav">
+  <a href="/committees/<%= committee.id %>/report?year=<%= prevYear %>&month=<%= prevMonth %>">&laquo; 前月</a>
+  <form method="get" action="/committees/<%= committee.id %>/report" class="inline-form">
+    <select name="year">
+      <% for (let y = year - 3; y <= year + 3; y++) { %>
+        <option value="<%= y %>" <%= y === year ? 'selected' : '' %>><%= y %>年</option>
+      <% } %>
+    </select>
+    <select name="month">
+      <% for (let mo = 1; mo <= 12; mo++) { %>
+        <option value="<%= mo %>" <%= mo === month ? 'selected' : '' %>><%= mo %>月</option>
+      <% } %>
+    </select>
+    <button type="submit">表示</button>
+  </form>
+  <a href="/committees/<%= committee.id %>/report?year=<%= nextYear %>&month=<%= nextMonth %>">次月 &raquo;</a>
+</div>
+
+<p>この月の開催回数: <strong><%= meetings.length %></strong>
+  <% if (meetings.length > 0) { %>
+    (<%= meetings.map(m => m.meeting_date).join(', ') %>)
+  <% } %>
+</p>
+
+<table class="list-table">
+  <thead><tr><th>氏名</th><th>出席回数</th><th>開催回数</th><th>出席率</th></tr></thead>
+  <tbody>
+    <% rows.forEach(r => { %>
+      <tr>
+        <td><%= r.member.name %></td>
+        <td><%= r.presentCount %></td>
+        <td><%= r.total %></td>
+        <td><%= r.rate === null ? '-' : r.rate + '%' %></td>
+      </tr>
+    <% }) %>
+    <% if (rows.length === 0) { %>
+      <tr><td colspan="4" class="empty">委員が登録されていません</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<%- include('partials/footer') %>
