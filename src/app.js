@@ -1,6 +1,10 @@
 const path = require('path');
 const express = require('express');
+const multer = require('multer');
 const db = require('./db');
+const { parseAttendanceCsv, decodeCsvBuffer } = require('./csv');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,18 +70,52 @@ app.get('/committees/:id', (req, res) => {
     )
     .all(committee.id);
 
-  res.render('committee', { committee, members, meetings });
+  const importError = req.query.import_error || null;
+  const importResult = req.query.imported
+    ? {
+        total: Number(req.query.total) || 0,
+        present: Number(req.query.present) || 0,
+        created: Number(req.query.created) || 0,
+      }
+    : null;
+
+  res.render('committee', { committee, members, meetings, importError, importResult });
 });
 
 app.post('/committees/:id/members', (req, res) => {
   const committee = getCommitteeOr404(req, res);
   if (!committee) return;
   const name = (req.body.name || '').trim();
+  const role = (req.body.role || '').trim();
+  const company = (req.body.company || '').trim();
   if (name) {
-    db.prepare('INSERT INTO members (committee_id, name) VALUES (?, ?)').run(
-      committee.id,
-      name
-    );
+    db.prepare(
+      'INSERT INTO members (committee_id, name, role, company) VALUES (?, ?, ?, ?)'
+    ).run(committee.id, name, role || null, company || null);
+  }
+  res.redirect(`/committees/${committee.id}`);
+});
+
+app.get('/committees/:id/members/:memberId/edit', (req, res) => {
+  const committee = getCommitteeOr404(req, res);
+  if (!committee) return;
+  const member = db
+    .prepare('SELECT * FROM members WHERE id = ? AND committee_id = ?')
+    .get(req.params.memberId, committee.id);
+  if (!member) return res.status(404).send('委員が見つかりません');
+  res.render('member_edit', { committee, member });
+});
+
+app.post('/committees/:id/members/:memberId/edit', (req, res) => {
+  const committee = getCommitteeOr404(req, res);
+  if (!committee) return;
+  const name = (req.body.name || '').trim();
+  const role = (req.body.role || '').trim();
+  const company = (req.body.company || '').trim();
+  if (name) {
+    db.prepare(
+      'UPDATE members SET name = ?, role = ?, company = ? WHERE id = ? AND committee_id = ?'
+    ).run(name, role || null, company || null, req.params.memberId, committee.id);
   }
   res.redirect(`/committees/${committee.id}`);
 });
@@ -125,6 +163,90 @@ app.post('/committees/:id/meetings/:meetingId/delete', (req, res) => {
     committee.id
   );
   res.redirect(`/committees/${committee.id}`);
+});
+
+// ---- 出欠CSVインポート ----
+app.post('/committees/:id/import', upload.single('csv'), (req, res) => {
+  const committee = getCommitteeOr404(req, res);
+  if (!committee) return;
+
+  const meetingDate = (req.body.meeting_date || '').trim();
+  const meetingTitle = (req.body.title || '').trim();
+
+  if (!meetingDate) {
+    return res.redirect(
+      `/committees/${committee.id}?import_error=${encodeURIComponent('開催日を指定してください')}`
+    );
+  }
+  if (!req.file) {
+    return res.redirect(
+      `/committees/${committee.id}?import_error=${encodeURIComponent('CSVファイルを選択してください')}`
+    );
+  }
+
+  let records;
+  try {
+    const text = decodeCsvBuffer(req.file.buffer);
+    records = parseAttendanceCsv(text);
+  } catch (e) {
+    return res.redirect(
+      `/committees/${committee.id}?import_error=${encodeURIComponent(e.message)}`
+    );
+  }
+
+  const tx = db.transaction(() => {
+    let meeting = db
+      .prepare('SELECT * FROM meetings WHERE committee_id = ? AND meeting_date = ?')
+      .get(committee.id, meetingDate);
+    if (!meeting) {
+      const result = db
+        .prepare(
+          'INSERT INTO meetings (committee_id, meeting_date, title) VALUES (?, ?, ?)'
+        )
+        .run(committee.id, meetingDate, meetingTitle || null);
+      meeting = { id: result.lastInsertRowid };
+    }
+
+    const findMember = db.prepare(
+      'SELECT * FROM members WHERE committee_id = ? AND name = ?'
+    );
+    const insertMember = db.prepare(
+      'INSERT INTO members (committee_id, name, role, company) VALUES (?, ?, ?, ?)'
+    );
+    const upsertAttendance = db.prepare(
+      `INSERT INTO attendance (meeting_id, member_id, present) VALUES (?, ?, ?)
+       ON CONFLICT(meeting_id, member_id) DO UPDATE SET present = excluded.present`
+    );
+
+    let createdMembers = 0;
+    let presentCount = 0;
+    for (const rec of records) {
+      let member = findMember.get(committee.id, rec.name);
+      if (!member) {
+        const result = insertMember.run(
+          committee.id,
+          rec.name,
+          rec.role || null,
+          rec.company || null
+        );
+        member = { id: result.lastInsertRowid };
+        createdMembers++;
+      }
+      upsertAttendance.run(meeting.id, member.id, rec.present ? 1 : 0);
+      if (rec.present) presentCount++;
+    }
+
+    return { total: records.length, presentCount, createdMembers };
+  });
+
+  const summary = tx();
+  const qs = new URLSearchParams({
+    imported: '1',
+    total: String(summary.total),
+    present: String(summary.presentCount),
+    created: String(summary.createdMembers),
+  });
+  res.redirect(`/committees/${committee.id}?${qs.toString()}`);
 });
 
 // ---- 出欠記録 ----
@@ -228,6 +350,61 @@ app.get('/committees/:id/report', (req, res) => {
     meetings,
     rows,
   });
+});
+
+// ---- 全体集計（委員×開催回のマトリクス + 個人別出席グラフ） ----
+app.get('/committees/:id/matrix', (req, res) => {
+  const committee = getCommitteeOr404(req, res);
+  if (!committee) return;
+
+  const members = db
+    .prepare('SELECT * FROM members WHERE committee_id = ? ORDER BY id')
+    .all(committee.id);
+  const meetings = db
+    .prepare('SELECT * FROM meetings WHERE committee_id = ? ORDER BY meeting_date, id')
+    .all(committee.id);
+
+  const attendanceRows = db
+    .prepare(
+      `SELECT a.meeting_id, a.member_id, a.present
+       FROM attendance a
+       JOIN meetings m ON m.id = a.meeting_id
+       WHERE m.committee_id = ?`
+    )
+    .all(committee.id);
+  const presentSet = new Set(
+    attendanceRows.filter((r) => r.present).map((r) => `${r.meeting_id}:${r.member_id}`)
+  );
+
+  const totalMeetings = meetings.length;
+  const memberRows = members.map((member) => {
+    const cells = meetings.map((mt) => presentSet.has(`${mt.id}:${member.id}`));
+    const presentCount = cells.filter(Boolean).length;
+    const rate = totalMeetings > 0 ? Math.round((presentCount / totalMeetings) * 1000) / 10 : null;
+    return { member, cells, presentCount, rate };
+  });
+
+  const meetingTotals = meetings.map(
+    (mt) => memberRows.filter((r) => presentSet.has(`${mt.id}:${r.member.id}`)).length
+  );
+
+  const maxPresent = memberRows.reduce((max, r) => Math.max(max, r.presentCount), 0);
+
+  res.render('matrix', {
+    committee,
+    meetings,
+    memberRows,
+    meetingTotals,
+    totalMeetings,
+    maxPresent,
+  });
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).send(`アップロードエラー: ${err.message}`);
+  }
+  next(err);
 });
 
 app.listen(PORT, () => {

@@ -19,7 +19,9 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     committee_id INTEGER NOT NULL REFERENCES committees(id) ON DELETE CASCADE,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    role TEXT,
+    company TEXT
   );
 
   CREATE TABLE IF NOT EXISTS meetings (
@@ -40,5 +42,14 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_meetings_committee ON meetings(committee_id);
   CREATE INDEX IF NOT EXISTS idx_meetings_date ON meetings(meeting_date);
 `);
+
+// 既存DB（role/company列がまだ無い状態で作成されたもの）への後方互換マイグレーション
+const memberColumns = db.prepare('PRAGMA table_info(members)').all().map((c) => c.name);
+if (!memberColumns.includes('role')) {
+  db.exec('ALTER TABLE members ADD COLUMN role TEXT');
+}
+if (!memberColumns.includes('company')) {
+  db.exec('ALTER TABLE members ADD COLUMN company TEXT');
+}
 
 module.exports = db;
