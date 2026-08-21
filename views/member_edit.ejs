@@ -1,0 +1,13 @@
+<%- include('partials/header', { title: '委員を編集 | ' + committee.name }) %>
+
+<p><a href="/committees/<%= committee.id %>">&laquo; <%= committee.name %> へ戻る</a></p>
+<h1>委員を編集</h1>
+
+<form method="post" action="/committees/<%= committee.id %>/members/<%= member.id %>/edit" class="stack-form">
+  <input type="text" name="role" placeholder="役職名（任意）" value="<%= member.role || '' %>">
+  <input type="text" name="name" placeholder="氏名" value="<%= member.name %>" required>
+  <input type="text" name="company" placeholder="事業所名（任意）" value="<%= member.company || '' %>">
+  <button type="submit">保存</button>
+</form>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,74 @@
+<%- include('partials/header', { title: '全体集計 | ' + committee.name }) %>
+
+<p><a href="/committees/<%= committee.id %>">&laquo; <%= committee.name %> へ戻る</a></p>
+<h1><%= committee.name %> — 全体集計</h1>
+
+<section>
+  <h2>出欠マトリクス</h2>
+  <div class="table-scroll">
+    <table class="list-table matrix-table">
+      <thead>
+        <tr>
+          <th>役職名</th>
+          <th>氏名</th>
+          <th>事業所名</th>
+          <% meetings.forEach(mt => { %>
+            <th class="matrix-date-col" title="<%= mt.title || '' %>"><%= mt.meeting_date %></th>
+          <% }) %>
+          <th>合計<br>出席数</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% memberRows.forEach(row => { %>
+          <tr>
+            <td><%= row.member.role || '' %></td>
+            <td><%= row.member.name %></td>
+            <td><%= row.member.company || '' %></td>
+            <% row.cells.forEach(present => { %>
+              <td class="matrix-cell"><%= present ? '○' : '' %></td>
+            <% }) %>
+            <td class="matrix-total"><%= row.presentCount %></td>
+          </tr>
+        <% }) %>
+        <% if (memberRows.length === 0) { %>
+          <tr><td colspan="<%= 4 + meetings.length %>" class="empty">委員が登録されていません</td></tr>
+        <% } %>
+      </tbody>
+      <% if (memberRows.length > 0) { %>
+        <tfoot>
+          <tr>
+            <td colspan="3">出席者合計</td>
+            <% meetingTotals.forEach(total => { %>
+              <td class="matrix-total"><%= total %></td>
+            <% }) %>
+            <td></td>
+          </tr>
+        </tfoot>
+      <% } %>
+    </table>
+  </div>
+  <% if (meetings.length === 0) { %>
+    <p class="empty">開催日が登録されていません</p>
+  <% } %>
+</section>
+
+<section>
+  <h2>個人別 出席グラフ</h2>
+  <% if (totalMeetings === 0) { %>
+    <p class="empty">開催日が登録されていないため、グラフを表示できません</p>
+  <% } else { %>
+    <div class="bar-chart">
+      <% memberRows.slice().sort((a, b) => b.presentCount - a.presentCount).forEach(row => { %>
+        <div class="bar-row">
+          <div class="bar-label"><%= row.member.name %></div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: <%= maxPresent > 0 ? Math.round((row.presentCount / maxPresent) * 100) : 0 %>%"></div>
+          </div>
+          <div class="bar-value"><%= row.presentCount %> / <%= totalMeetings %>（<%= row.rate %>%）</div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<%- include('partials/footer') %>

@@ -90,3 +90,90 @@ button.danger:hover { background: #8f312d; }
   gap: 6px;
   margin: 0;
 }
+
+.hint {
+  font-size: 0.85rem;
+  color: #5c6672;
+  background: #eef1f5;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+.hint code {
+  background: #dde2e8;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.banner {
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+.banner-success {
+  background: #e4f3e8;
+  color: #1f6b39;
+  border: 1px solid #bfe3c9;
+}
+.banner-error {
+  background: #fbeae8;
+  color: #a3352d;
+  border: 1px solid #f0c4bf;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.matrix-table {
+  white-space: nowrap;
+}
+.matrix-date-col {
+  font-size: 0.8rem;
+}
+.matrix-cell {
+  text-align: center;
+}
+.matrix-total {
+  text-align: center;
+  font-weight: 600;
+  background: #f7f8fa;
+}
+.matrix-table tfoot td {
+  font-weight: 600;
+  background: #eef1f5;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px;
+  align-items: center;
+  gap: 10px;
+}
+.bar-label {
+  text-align: right;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bar-track {
+  background: #e7e9ec;
+  border-radius: 4px;
+  height: 16px;
+  overflow: hidden;
+}
+.bar-fill {
+  background: #2b4c7e;
+  height: 100%;
+  border-radius: 4px;
+}
+.bar-value {
+  font-size: 0.85rem;
+  color: #5c6672;
+}

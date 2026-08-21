@@ -2,17 +2,33 @@
 
 <p><a href="/">&laquo; 委員会一覧へ戻る</a></p>
 <h1><%= committee.name %></h1>
-<p><a href="/committees/<%= committee.id %>/report">この委員会の月別出席集計を見る &raquo;</a></p>
+<p>
+  <a href="/committees/<%= committee.id %>/report">月別出席集計 &raquo;</a>
+  &nbsp;|&nbsp;
+  <a href="/committees/<%= committee.id %>/matrix">全体集計・出席グラフ &raquo;</a>
+</p>
+
+<% if (typeof importError !== 'undefined' && importError) { %>
+  <div class="banner banner-error"><%= importError %></div>
+<% } %>
+<% if (typeof importResult !== 'undefined' && importResult) { %>
+  <div class="banner banner-success">
+    CSVを読み込みました。全<%= importResult.total %>件（出席 <%= importResult.present %>名 / 新規委員登録 <%= importResult.created %>名）
+  </div>
+<% } %>
 
 <section>
   <h2>委員</h2>
   <table class="list-table">
-    <thead><tr><th>氏名</th><th></th></tr></thead>
+    <thead><tr><th>役職名</th><th>氏名</th><th>事業所名</th><th></th></tr></thead>
     <tbody>
       <% members.forEach(m => { %>
         <tr>
+          <td><%= m.role || '' %></td>
           <td><%= m.name %></td>
+          <td><%= m.company || '' %></td>
           <td>
+            <a href="/committees/<%= committee.id %>/members/<%= m.id %>/edit">編集</a>
             <form method="post" action="/committees/<%= committee.id %>/members/<%= m.id %>/delete" class="inline-form"
                   onsubmit="return confirm('「<%= m.name %>」を削除します。よろしいですか？');">
               <button type="submit" class="danger">削除</button>
@@ -21,12 +37,14 @@
         </tr>
       <% }) %>
       <% if (members.length === 0) { %>
-        <tr><td colspan="2" class="empty">委員が登録されていません</td></tr>
+        <tr><td colspan="4" class="empty">委員が登録されていません</td></tr>
       <% } %>
     </tbody>
   </table>
   <form method="post" action="/committees/<%= committee.id %>/members" class="stack-form">
-    <input type="text" name="name" placeholder="委員の氏名" required>
+    <input type="text" name="role" placeholder="役職名（任意）" size="8">
+    <input type="text" name="name" placeholder="氏名" required>
+    <input type="text" name="company" placeholder="事業所名（任意）">
     <button type="submit">委員を追加</button>
   </form>
 </section>
@@ -58,6 +76,21 @@
     <input type="date" name="meeting_date" required>
     <input type="text" name="title" placeholder="議題・備考（任意）">
     <button type="submit">開催日を追加</button>
+  </form>
+</section>
+
+<section>
+  <h2>出欠CSVインポート</h2>
+  <p class="hint">
+    1行目に見出し（<code>氏名</code> と <code>出席</code> または <code>回答状況</code> の列）が必要です。
+    出席は <code>○</code>・<code>参加</code>、欠席は空欄・<code>×</code>・<code>不参加</code> と判定します。
+    <code>役職名</code>・<code>事業所名</code> 列があれば、CSVにしかいない新しい委員も自動で登録します。
+  </p>
+  <form method="post" action="/committees/<%= committee.id %>/import" enctype="multipart/form-data" class="stack-form">
+    <input type="date" name="meeting_date" required title="対象の開催日（既存の日付なら上書き、新しい日付なら自動作成）">
+    <input type="text" name="title" placeholder="議題・備考（任意・新規作成時のみ使用）">
+    <input type="file" name="csv" accept=".csv,text/csv" required>
+    <button type="submit">CSVをインポート</button>
   </form>
 </section>
 
