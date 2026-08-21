@@ -400,6 +400,23 @@ app.get('/committees/:id/matrix', (req, res) => {
   });
 });
 
+// ---- 全委員会 出席ランキング ----
+app.get('/ranking', (req, res) => {
+  const order = req.query.order === 'asc' ? 'asc' : 'desc';
+
+  const rows = db
+    .prepare(
+      `SELECT m.id AS member_id, m.name, m.company, c.name AS committee_name,
+              (SELECT COUNT(*) FROM attendance a WHERE a.member_id = m.id AND a.present = 1) AS present_count
+       FROM members m
+       JOIN committees c ON c.id = m.committee_id
+       ORDER BY present_count ${order === 'asc' ? 'ASC' : 'DESC'}, m.id ASC`
+    )
+    .all();
+
+  res.render('ranking', { rows, order });
+});
+
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     return res.status(400).send(`アップロードエラー: ${err.message}`);
