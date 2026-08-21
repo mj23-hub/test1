@@ -1,0 +1,28 @@
+<%- include('partials/header', { title: '出欠記録 | ' + committee.name }) %>
+
+<p><a href="/committees/<%= committee.id %>">&laquo; <%= committee.name %> へ戻る</a></p>
+<h1><%= committee.name %> — <%= meeting.meeting_date %> の出欠</h1>
+<% if (meeting.title) { %><p><%= meeting.title %></p><% } %>
+
+<form method="post" action="/committees/<%= committee.id %>/meetings/<%= meeting.id %>">
+  <table class="list-table">
+    <thead><tr><th>出席</th><th>氏名</th></tr></thead>
+    <tbody>
+      <% members.forEach(m => { %>
+        <tr>
+          <td>
+            <input type="checkbox" name="present" value="<%= m.id %>" id="member-<%= m.id %>"
+                   <%= m.present ? 'checked' : '' %>>
+          </td>
+          <td><label for="member-<%= m.id %>"><%= m.name %></label></td>
+        </tr>
+      <% }) %>
+      <% if (members.length === 0) { %>
+        <tr><td colspan="2" class="empty">委員が登録されていません</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+  <button type="submit">出欠を保存</button>
+</form>
+
+<%- include('partials/footer') %>
