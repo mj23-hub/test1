@@ -1,0 +1,53 @@
+<%- include('partials/header', { title: '全委員会 出席ランキング | 委員会出席カウントシステム' }) %>
+
+<p><a href="/">&laquo; 委員会一覧へ戻る</a></p>
+<h1>全委員会 出席ランキング</h1>
+
+<div class="sort-toggle">
+  <span class="sort-toggle-label">出席数で並び替え:</span>
+  <a href="/ranking?order=desc" class="sort-pill <%= order === 'desc' ? 'active' : '' %>">降順（多い順）</a>
+  <a href="/ranking?order=asc" class="sort-pill <%= order === 'asc' ? 'active' : '' %>">昇順（少ない順）</a>
+</div>
+
+<table class="list-table ranking-table">
+  <thead>
+    <tr>
+      <th>順位</th>
+      <th>委員会名</th>
+      <th>氏名</th>
+      <th>事業所名</th>
+      <th>出席数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% rows.forEach((row, i) => { %>
+      <tr class="<%= i === 0 ? 'rank-first' : '' %>">
+        <td class="rank-col"><%= i + 1 %></td>
+        <td><%= row.committee_name %></td>
+        <td>
+          <% if (i === 0) { %>
+            <button type="button" class="rank1-name" data-fireworks="1">
+              🏆 <%= row.name %>
+            </button>
+          <% } else { %>
+            <%= row.name %>
+          <% } %>
+        </td>
+        <td><%= row.company || '' %></td>
+        <td class="matrix-total"><%= row.present_count %></td>
+      </tr>
+    <% }) %>
+    <% if (rows.length === 0) { %>
+      <tr><td colspan="5" class="empty">委員が登録されていません</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<script src="/fireworks.js"></script>
+<script>
+  document.querySelectorAll('[data-fireworks]').forEach((el) => {
+    el.addEventListener('click', () => window.launchFireworks());
+  });
+</script>
+
+<%- include('partials/footer') %>

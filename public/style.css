@@ -246,3 +246,57 @@ button.danger:hover { background: #8f312d; filter: none; }
   font-size: 0.85rem;
   color: var(--muted);
 }
+
+.sort-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.sort-toggle-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.sort-pill {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--navy);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.sort-pill:hover { border-color: var(--indigo); }
+.sort-pill.active {
+  background: var(--gradient);
+  border-color: transparent;
+  color: #fff;
+}
+
+.rank-col {
+  font-weight: 800;
+  color: var(--navy);
+  width: 48px;
+}
+tr.rank-first {
+  background: linear-gradient(90deg, #fff8e1 0%, #fff 60%);
+}
+tr.rank-first .rank-col {
+  color: #b8860b;
+}
+
+.rank1-name {
+  border: none;
+  background: none;
+  padding: 2px 4px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #8a6300;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.rank1-name:hover {
+  background: #fff3cd;
+}
