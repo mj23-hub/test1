@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>発注記録 - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'orders' }) %>
+    <div class="admin-main">
+      <h1>発注記録（誰が・どこに・何を発注したか）</h1>
+
+      <form method="GET" action="/admin/orders" class="form-grid" style="margin-bottom:16px;">
+        <div class="field">
+          <label>発注者</label>
+          <select name="user_id">
+            <option value="">全員</option>
+            <% users.forEach(function (u) { %>
+              <option value="<%= u.id %>" <%= String(filters.userId) === String(u.id) ? 'selected' : '' %>><%= u.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field">
+          <label>品目</label>
+          <select name="item_id">
+            <option value="">全品目</option>
+            <% items.forEach(function (i) { %>
+              <option value="<%= i.id %>" <%= String(filters.itemId) === String(i.id) ? 'selected' : '' %>><%= i.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field">
+          <label>発注先</label>
+          <select name="supplier_id">
+            <option value="">全発注先</option>
+            <% suppliers.forEach(function (s) { %>
+              <option value="<%= s.id %>" <%= String(filters.supplierId) === String(s.id) ? 'selected' : '' %>><%= s.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field"><label>開始日</label><input type="date" name="from" value="<%= filters.from || '' %>"></div>
+        <div class="field"><label>終了日</label><input type="date" name="to" value="<%= filters.to || '' %>"></div>
+        <div class="field"><button type="submit" class="btn">絞り込み</button></div>
+      </form>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>日時</th><th>発注者</th><th>品目</th><th>数量</th><th>発注先</th><th>メモ</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(function (o) { %>
+            <tr>
+              <td><%= o.ordered_at %></td>
+              <td><%= o.user_name %></td>
+              <td><%= o.item_name %></td>
+              <td><%= o.quantity %><%= o.unit %></td>
+              <td><%= o.supplier_name || o.supplier_name_raw || '未設定' %></td>
+              <td><%= o.note || '' %></td>
+              <td>
+                <a href="/admin/orders/<%= o.id %>/edit" class="btn small">編集</a>
+                <form method="POST" action="/admin/orders/<%= o.id %>/delete" onsubmit="return confirm('この発注記録を削除しますか？');" class="inline-form">
+                  <button type="submit" class="btn danger small">削除</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+          <% if (orders.length === 0) { %>
+            <tr><td colspan="7">該当する発注記録がありません。</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

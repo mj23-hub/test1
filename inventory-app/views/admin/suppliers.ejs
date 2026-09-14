@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>発注先マスタ - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'suppliers' }) %>
+    <div class="admin-main">
+      <h1>発注先マスタ</h1>
+
+      <div class="card">
+        <h3>新しい発注先を追加</h3>
+        <form method="POST" action="/admin/suppliers" class="form-grid">
+          <div class="field"><label>発注先名</label><input name="name" required></div>
+          <div class="field"><button type="submit" class="btn">追加</button></div>
+        </form>
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>発注先名</th><th>状態</th><th></th></tr></thead>
+        <tbody>
+          <% suppliers.forEach(function (s) { %>
+            <% var fid = 'supplier-form-' + s.id; %>
+            <tr class="<%= s.active ? '' : 'inactive' %>">
+              <td><input form="<%= fid %>" name="name" value="<%= s.name %>" required></td>
+              <td><label style="display:inline;"><input form="<%= fid %>" type="checkbox" name="active" value="1" style="width:auto;" <%= s.active ? 'checked' : '' %>> 有効</label></td>
+              <td>
+                <button type="submit" form="<%= fid %>" class="btn small">保存</button>
+                <form method="POST" action="/admin/suppliers/<%= s.id %>/delete" onsubmit="return confirm('この発注先を無効化しますか？');" class="inline-form">
+                  <button type="submit" class="btn danger small">無効化</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <% suppliers.forEach(function (s) { %>
+        <form id="supplier-form-<%= s.id %>" method="POST" action="/admin/suppliers/<%= s.id %>"></form>
+      <% }); %>
+    </div>
+  </div>
+</body>
+</html>

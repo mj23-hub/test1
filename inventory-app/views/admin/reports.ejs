@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>集計レポート - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'reports' }) %>
+    <div class="admin-main">
+      <h1>集計レポート</h1>
+
+      <div class="tab-bar">
+        <a href="/admin/reports?mode=day" class="<%= mode === 'day' ? 'active' : '' %>">日別</a>
+        <a href="/admin/reports?mode=month" class="<%= mode === 'month' ? 'active' : '' %>">月別</a>
+        <a href="/admin/reports?mode=year" class="<%= mode === 'year' ? 'active' : '' %>">年別</a>
+      </div>
+
+      <form method="GET" action="/admin/reports" style="margin-bottom:16px;display:flex;gap:8px;align-items:end;">
+        <input type="hidden" name="mode" value="<%= mode %>">
+        <div class="field" style="margin-bottom:0;">
+          <label>
+            <% if (mode === 'day') { %>日付
+            <% } else if (mode === 'year') { %>年
+            <% } else { %>年月<% } %>
+          </label>
+          <% if (mode === 'day') { %>
+            <input type="date" name="date" value="<%= dateValue %>">
+          <% } else if (mode === 'year') { %>
+            <input type="number" name="date" value="<%= dateValue %>" min="2000" max="2100">
+          <% } else { %>
+            <input type="month" name="date" value="<%= dateValue %>">
+          <% } %>
+        </div>
+        <button type="submit" class="btn">表示</button>
+      </form>
+
+      <p>発注件数合計: <strong><%= totalOrders %></strong> 件</p>
+
+      <div class="card">
+        <h3>品目別 発注数量</h3>
+        <canvas id="itemChart" height="100"></canvas>
+      </div>
+
+      <div class="report-grid">
+        <div class="card">
+          <h3>品目別</h3>
+          <table class="data-table">
+            <thead><tr><th>品目</th><th>件数</th><th>合計数量</th></tr></thead>
+            <tbody>
+              <% byItem.forEach(function (r) { %>
+                <tr><td><%= r.label %></td><td><%= r.cnt %></td><td><%= r.total %><%= r.unit %></td></tr>
+              <% }); %>
+              <% if (byItem.length === 0) { %><tr><td colspan="3">データがありません。</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>発注先別</h3>
+          <table class="data-table">
+            <thead><tr><th>発注先</th><th>件数</th><th>合計数量</th></tr></thead>
+            <tbody>
+              <% bySupplier.forEach(function (r) { %>
+                <tr><td><%= r.label %></td><td><%= r.cnt %></td><td><%= r.total %></td></tr>
+              <% }); %>
+              <% if (bySupplier.length === 0) { %><tr><td colspan="3">データがありません。</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>発注者別</h3>
+          <table class="data-table">
+            <thead><tr><th>発注者</th><th>件数</th><th>合計数量</th></tr></thead>
+            <tbody>
+              <% byUser.forEach(function (r) { %>
+                <tr><td><%= r.label %></td><td><%= r.cnt %></td><td><%= r.total %></td></tr>
+              <% }); %>
+              <% if (byUser.length === 0) { %><tr><td colspan="3">データがありません。</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var labels = <%- JSON.stringify(byItem.map(function (r) { return r.label; })) %>;
+    var data = <%- JSON.stringify(byItem.map(function (r) { return r.total; })) %>;
+    var ctx = document.getElementById('itemChart');
+    if (ctx && labels.length > 0) {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{ label: '発注数量', data: data, backgroundColor: '#06c755' }],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } },
+        },
+      });
+    }
+  </script>
+</body>
+</html>

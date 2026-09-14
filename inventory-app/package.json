@@ -1,0 +1,16 @@
+{
+  "name": "sakaya-inventory",
+  "version": "1.0.0",
+  "description": "酒屋の備品発注・在庫管理システム（チャット入力対応）",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2"
+  }
+}
