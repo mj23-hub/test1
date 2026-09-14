@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>チャット入力 - 備品発注</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="chat-page">
+    <div class="chat-header">
+      <span><%= currentUser.name %> さん</span>
+      <span>
+        <a href="/history">履歴</a>
+        <% if (currentUser.role === 'admin') { %> | <a href="/admin">管理画面</a><% } %>
+        &nbsp;|&nbsp;
+        <form method="POST" action="/logout" style="display:inline;">
+          <button type="submit" style="background:none;border:none;color:#fff;font-size:13px;cursor:pointer;padding:0;">ログアウト</button>
+        </form>
+      </span>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <% messages.forEach(function (m) { %>
+        <% var isMine = m.direction === 'in' && m.user_id === currentUser.id; %>
+        <% var rowClass = isMine ? 'in' : 'out'; %>
+        <div class="msg-row <%= rowClass %>">
+          <div class="msg-wrap">
+            <% if (m.direction === 'in' && !isMine) { %>
+              <div class="msg-meta"><%= m.user_name %></div>
+            <% } %>
+            <div class="bubble"><%= m.body %></div>
+            <% if (m.meta && m.meta.quickReplies && m.direction === 'out') { %>
+              <div class="quick-replies">
+                <% m.meta.quickReplies.forEach(function (qr) { %>
+                  <button type="button" class="quick-reply-btn" onclick="sendQuick('<%= qr.replace(/'/g, "\\'") %>')"><%= qr %></button>
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <form class="chat-input-bar" method="POST" action="/chat/message" id="chat-form">
+      <textarea name="text" id="chat-text" placeholder="例: 紙コップ 10箱 発注" required></textarea>
+      <button type="submit" class="btn">送信</button>
+    </form>
+  </div>
+
+  <script src="/js/chat.js"></script>
+</body>
+</html>

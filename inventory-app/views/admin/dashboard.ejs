@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ダッシュボード - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'dashboard' }) %>
+    <div class="admin-main">
+      <h1>ダッシュボード</h1>
+
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="num"><%= today %></div>
+          <div class="label">本日の発注件数</div>
+        </div>
+        <div class="stat-box">
+          <div class="num"><%= thisMonth %></div>
+          <div class="label">今月の発注件数</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>今月よく発注されている品目</h3>
+        <table class="data-table">
+          <thead><tr><th>品目</th><th>合計数量</th></tr></thead>
+          <tbody>
+            <% topItemsThisMonth.forEach(function (r) { %>
+              <tr><td><%= r.item_name %></td><td><%= r.total %><%= r.unit %></td></tr>
+            <% }); %>
+            <% if (topItemsThisMonth.length === 0) { %>
+              <tr><td colspan="2">データがありません。</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>直近の発注</h3>
+        <table class="data-table">
+          <thead><tr><th>日時</th><th>発注者</th><th>品目</th><th>数量</th><th>発注先</th></tr></thead>
+          <tbody>
+            <% recentOrders.forEach(function (o) { %>
+              <tr>
+                <td><%= o.ordered_at %></td>
+                <td><%= o.user_name %></td>
+                <td><%= o.item_name %></td>
+                <td><%= o.quantity %><%= o.unit %></td>
+                <td><%= o.supplier_name || o.supplier_name_raw || '未設定' %></td>
+              </tr>
+            <% }); %>
+            <% if (recentOrders.length === 0) { %>
+              <tr><td colspan="5">データがありません。</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

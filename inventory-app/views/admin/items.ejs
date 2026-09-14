@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>品目マスタ - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'items' }) %>
+    <div class="admin-main">
+      <h1>品目マスタ</h1>
+
+      <div class="card">
+        <h3>新しい品目を追加</h3>
+        <form method="POST" action="/admin/items" class="form-grid">
+          <div class="field"><label>品目名</label><input name="name" required></div>
+          <div class="field"><label>単位</label><input name="unit" value="個" required></div>
+          <div class="field"><label>カテゴリ</label><input name="category" placeholder="例: 清掃用品"></div>
+          <div class="field"><label>別名（カンマ区切り）</label><input name="aliases" placeholder="例: ふきん,タオル"></div>
+          <div class="field">
+            <label>既定の発注先</label>
+            <select name="default_supplier_id">
+              <option value="">なし</option>
+              <% suppliers.forEach(function (s) { %>
+                <option value="<%= s.id %>"><%= s.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field"><label>表示順</label><input name="sort_order" type="number" value="0"></div>
+          <div class="field"><button type="submit" class="btn">追加</button></div>
+        </form>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>品目名</th><th>単位</th><th>カテゴリ</th><th>別名</th><th>既定の発注先</th><th>表示順</th><th>状態</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% items.forEach(function (item) { %>
+            <% var fid = 'item-form-' + item.id; %>
+            <tr class="<%= item.active ? '' : 'inactive' %>">
+              <td><input form="<%= fid %>" name="name" value="<%= item.name %>" required></td>
+              <td><input form="<%= fid %>" name="unit" value="<%= item.unit %>" required></td>
+              <td><input form="<%= fid %>" name="category" value="<%= item.category || '' %>"></td>
+              <td><input form="<%= fid %>" name="aliases" value="<%= item.aliases || '' %>"></td>
+              <td>
+                <select form="<%= fid %>" name="default_supplier_id">
+                  <option value="">なし</option>
+                  <% suppliers.forEach(function (s) { %>
+                    <option value="<%= s.id %>" <%= item.default_supplier_id === s.id ? 'selected' : '' %>><%= s.name %></option>
+                  <% }); %>
+                </select>
+              </td>
+              <td><input form="<%= fid %>" name="sort_order" type="number" value="<%= item.sort_order %>" style="width:64px;"></td>
+              <td>
+                <label style="display:inline;"><input form="<%= fid %>" type="checkbox" name="active" value="1" style="width:auto;" <%= item.active ? 'checked' : '' %>> 有効</label>
+              </td>
+              <td>
+                <button type="submit" form="<%= fid %>" class="btn small">保存</button>
+                <form method="POST" action="/admin/items/<%= item.id %>/delete" onsubmit="return confirm('この品目を無効化しますか？');" class="inline-form">
+                  <button type="submit" class="btn danger small">無効化</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <% items.forEach(function (item) { %>
+        <form id="item-form-<%= item.id %>" method="POST" action="/admin/items/<%= item.id %>"></form>
+      <% }); %>
+    </div>
+  </div>
+</body>
+</html>

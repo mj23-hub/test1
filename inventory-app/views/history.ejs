@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>発注履歴</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="chat-header" style="border-radius:8px;margin-bottom:16px;">
+      <span>発注履歴</span>
+      <a href="/chat">チャットに戻る</a>
+    </div>
+
+    <form class="filter-bar" method="GET" action="/history">
+      <select name="user_id">
+        <option value="">全員</option>
+        <% users.forEach(function (u) { %>
+          <option value="<%= u.id %>" <%= String(filters.userId) === String(u.id) ? 'selected' : '' %>><%= u.name %></option>
+        <% }); %>
+      </select>
+      <select name="item_id">
+        <option value="">全品目</option>
+        <% items.forEach(function (i) { %>
+          <option value="<%= i.id %>" <%= String(filters.itemId) === String(i.id) ? 'selected' : '' %>><%= i.name %></option>
+        <% }); %>
+      </select>
+      <select name="supplier_id">
+        <option value="">全発注先</option>
+        <% suppliers.forEach(function (s) { %>
+          <option value="<%= s.id %>" <%= String(filters.supplierId) === String(s.id) ? 'selected' : '' %>><%= s.name %></option>
+        <% }); %>
+      </select>
+      <input type="date" name="from" value="<%= filters.from || '' %>">
+      <input type="date" name="to" value="<%= filters.to || '' %>">
+      <button type="submit" class="btn small">絞り込み</button>
+    </form>
+
+    <% if (orders.length === 0) { %>
+      <p style="color:#767676;text-align:center;">該当する発注記録がありません。</p>
+    <% } %>
+
+    <% orders.forEach(function (o) { %>
+      <div class="history-item">
+        <div class="date"><%= o.ordered_at %></div>
+        <div><span class="qty"><%= o.item_name %> <%= o.quantity %><%= o.unit %></span></div>
+        <div>発注者: <%= o.user_name %> / 発注先: <%= o.supplier_name || o.supplier_name_raw || '未設定' %></div>
+      </div>
+    <% }); %>
+  </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>発注記録の編集 - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'orders' }) %>
+    <div class="admin-main">
+      <h1>発注記録の編集</h1>
+
+      <div class="card">
+        <form method="POST" action="/admin/orders/<%= order.id %>" class="form-grid">
+          <div class="field">
+            <label>発注者</label>
+            <select name="user_id" required>
+              <% users.forEach(function (u) { %>
+                <option value="<%= u.id %>" <%= u.id === order.user_id ? 'selected' : '' %>><%= u.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field">
+            <label>品目</label>
+            <select name="item_id" required>
+              <% items.forEach(function (i) { %>
+                <option value="<%= i.id %>" <%= i.id === order.item_id ? 'selected' : '' %>><%= i.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field"><label>数量</label><input name="quantity" type="number" step="0.01" value="<%= order.quantity %>" required></div>
+          <div class="field"><label>単位</label><input name="unit" value="<%= order.unit %>" required></div>
+          <div class="field">
+            <label>発注先</label>
+            <select name="supplier_id">
+              <option value="">未設定</option>
+              <% suppliers.forEach(function (s) { %>
+                <option value="<%= s.id %>" <%= s.id === order.supplier_id ? 'selected' : '' %>><%= s.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field"><label>日時</label><input name="ordered_at" type="datetime-local" value="<%= order.ordered_at.replace(' ', 'T').slice(0, 16) %>" required></div>
+          <div class="field" style="grid-column: 1 / -1;"><label>メモ</label><input name="note" value="<%= order.note || '' %>"></div>
+          <div class="field"><button type="submit" class="btn">保存</button></div>
+          <div class="field"><a href="/admin/orders" class="btn secondary">キャンセル</a></div>
+        </form>
+      </div>
+
+      <% if (order.raw_message) { %>
+        <p style="color:#767676;font-size:13px;">元のチャット入力: 「<%= order.raw_message %>」</p>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

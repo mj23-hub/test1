@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン - 酒屋 備品発注システム</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="login-header">
+      <h1>🍶 備品発注・在庫管理</h1>
+      <p>アカウントを選んでください</p>
+    </div>
+
+    <% if (error) { %>
+      <div class="error-message"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/login" id="login-form">
+      <input type="hidden" name="user_id" id="user_id" value="<%= selectedUserId || '' %>">
+      <div class="account-grid">
+        <% users.forEach(function(u) { %>
+          <div class="account-tile <%= u.role === 'admin' ? 'admin' : '' %> <%= String(u.id) === String(selectedUserId) ? 'selected' : '' %>"
+               data-user-id="<%= u.id %>" data-has-pin="<%= u.pin ? '1' : '0' %>" onclick="selectAccount(this)">
+            <div class="account-avatar"><%= u.name.slice(0,1) %></div>
+            <div class="account-name"><%= u.name %></div>
+          </div>
+        <% }); %>
+      </div>
+
+      <div class="field" id="pin-field" style="display:none;">
+        <label for="pin">PINコード</label>
+        <input type="password" inputmode="numeric" name="pin" id="pin" maxlength="8" placeholder="PINコードを入力">
+      </div>
+
+      <button type="submit" class="btn" style="width:100%;">ログイン</button>
+    </form>
+  </div>
+
+  <script>
+    function selectAccount(el) {
+      document.querySelectorAll('.account-tile').forEach(function (t) { t.classList.remove('selected'); });
+      el.classList.add('selected');
+      document.getElementById('user_id').value = el.dataset.userId;
+      var pinField = document.getElementById('pin-field');
+      pinField.style.display = el.dataset.hasPin === '1' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<div class="admin-nav">
+  <h2>🍶 管理画面</h2>
+  <a href="/admin" class="<%= active === 'dashboard' ? 'active' : '' %>">ダッシュボード</a>
+  <a href="/admin/orders" class="<%= active === 'orders' ? 'active' : '' %>">発注記録</a>
+  <a href="/admin/reports" class="<%= active === 'reports' ? 'active' : '' %>">集計レポート</a>
+  <a href="/admin/items" class="<%= active === 'items' ? 'active' : '' %>">品目マスタ</a>
+  <a href="/admin/suppliers" class="<%= active === 'suppliers' ? 'active' : '' %>">発注先マスタ</a>
+  <a href="/admin/users" class="<%= active === 'users' ? 'active' : '' %>">アカウント管理</a>
+  <a href="/chat">チャット画面へ</a>
+  <div class="logout-form">
+    <form method="POST" action="/logout">
+      <button type="submit" class="btn secondary small" style="width:100%;">ログアウト</button>
+    </form>
+  </div>
+</div>

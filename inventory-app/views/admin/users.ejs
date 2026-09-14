@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アカウント管理 - 管理画面</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <%- include('../partials/admin_nav', { active: 'users' }) %>
+    <div class="admin-main">
+      <h1>アカウント管理</h1>
+      <p style="color:#767676;font-size:13px;">PINは空欄にすると、ログイン時に入力なしで選択できます。</p>
+
+      <div class="card">
+        <h3>新しいアカウントを追加</h3>
+        <form method="POST" action="/admin/users" class="form-grid">
+          <div class="field"><label>名前</label><input name="name" required></div>
+          <div class="field">
+            <label>権限</label>
+            <select name="role">
+              <option value="staff">スタッフ</option>
+              <option value="admin">管理者</option>
+            </select>
+          </div>
+          <div class="field"><label>PIN（任意）</label><input name="pin" placeholder="例: 1234"></div>
+          <div class="field"><button type="submit" class="btn">追加</button></div>
+        </form>
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>名前</th><th>権限</th><th>PIN</th><th>状態</th><th></th></tr></thead>
+        <tbody>
+          <% users.forEach(function (u) { %>
+            <% var fid = 'user-form-' + u.id; %>
+            <tr class="<%= u.active ? '' : 'inactive' %>">
+              <td><input form="<%= fid %>" name="name" value="<%= u.name %>" required></td>
+              <td>
+                <select form="<%= fid %>" name="role">
+                  <option value="staff" <%= u.role === 'staff' ? 'selected' : '' %>>スタッフ</option>
+                  <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>管理者</option>
+                </select>
+              </td>
+              <td><input form="<%= fid %>" name="pin" value="<%= u.pin || '' %>" placeholder="なし"></td>
+              <td><label style="display:inline;"><input form="<%= fid %>" type="checkbox" name="active" value="1" style="width:auto;" <%= u.active ? 'checked' : '' %>> 有効</label></td>
+              <td>
+                <button type="submit" form="<%= fid %>" class="btn small">保存</button>
+                <form method="POST" action="/admin/users/<%= u.id %>/delete" onsubmit="return confirm('このアカウントを無効化しますか？');" class="inline-form">
+                  <button type="submit" class="btn danger small">無効化</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <% users.forEach(function (u) { %>
+        <form id="user-form-<%= u.id %>" method="POST" action="/admin/users/<%= u.id %>"></form>
+      <% }); %>
+    </div>
+  </div>
+</body>
+</html>
