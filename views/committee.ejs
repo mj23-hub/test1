@@ -97,8 +97,10 @@
     1行目に見出し（<code>氏名</code> と <code>出席</code> または <code>回答状況</code> の列）が必要です。
     出席は <code>○</code>・<code>参加</code>、欠席は空欄・<code>×</code>・<code>不参加</code> と判定します。
     <code>役職名</code>・<code>事業所名</code> 列があれば、CSVにしかいない新しい委員も自動で登録します。<br>
-    開催日はファイル名から自動判定します（例: <code>0818.csv</code> → 8月18日、<code>20260818.csv</code> → 2026年8月18日）。
-    ファイル名から判定できない場合のみ、下の「開催日」欄の値を使用します。最大<%= 3 %>ファイルまで同時に選択できます。
+    開催日はファイル名から自動判定します（例: <code>0818.csv</code> → 8月18日、<code>20260818.csv</code> → 2026年8月18日、
+    <code>4月.csv</code> → 4月1日として登録）。日までは分からず月だけ分かる場合は、ファイル名に「4月」のように
+    入れておけば1日として自動登録されます。ファイル名から判定できない場合のみ、下の「開催日」欄の値を使用します。
+    最大<%= 3 %>ファイルまで同時に選択できます。
   </p>
   <form method="post" action="/committees/<%= committee.id %>/import" enctype="multipart/form-data" class="stack-form">
     <input type="date" name="meeting_date" title="ファイル名から開催日を判定できなかった場合に使う開催日（任意）">

@@ -122,27 +122,49 @@ function parseAttendanceCsv(text) {
   return records;
 }
 
-// ファイル名から開催日を推測する（例: "0818_出席.csv" → 8月18日、"20260818.csv" → 2026年8月18日）
+// ファイル名から開催日を推測する（例: "0818_出席.csv" → 8月18日、"20260818.csv" → 2026年8月18日、
+// "4月.csv" → その年の4月1日など、日まで分からない場合は1日として扱う）
 // year: ファイル名に年が無い場合に使う年（通常は現在の年）
 function parseDateFromFilename(filename, year) {
   const base = (filename || '').replace(/\.[^.]+$/, '');
-  const digitRuns = base.match(/\d+/g) || [];
 
+  // 「2026年4月18日」「4月18日」のように漢字で日付が書かれている場合（最優先・曖昧さがない）
+  let m = base.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (m && isValidDate(Number(m[1]), Number(m[2]), Number(m[3]))) {
+    return formatDate(Number(m[1]), Number(m[2]), Number(m[3]));
+  }
+  m = base.match(/(\d{1,2})月(\d{1,2})日/);
+  if (m && isValidDate(year, Number(m[1]), Number(m[2]))) {
+    return formatDate(year, Number(m[1]), Number(m[2]));
+  }
+
+  const digitRuns = base.match(/\d+/g) || [];
   for (const run of digitRuns) {
     if (run.length >= 8) {
       const y = Number(run.slice(0, 4));
-      const m = Number(run.slice(4, 6));
+      const mo = Number(run.slice(4, 6));
       const d = Number(run.slice(6, 8));
-      if (isValidDate(y, m, d)) return formatDate(y, m, d);
+      if (isValidDate(y, mo, d)) return formatDate(y, mo, d);
     }
   }
   for (const run of digitRuns) {
     if (run.length === 4) {
-      const m = Number(run.slice(0, 2));
+      const mo = Number(run.slice(0, 2));
       const d = Number(run.slice(2, 4));
-      if (isValidDate(year, m, d)) return formatDate(year, m, d);
+      if (isValidDate(year, mo, d)) return formatDate(year, mo, d);
     }
   }
+
+  // 日までは分からないが「4月」のように月だけ漢字で書かれている場合は1日として扱う
+  m = base.match(/(\d{4})年(\d{1,2})月/);
+  if (m && Number(m[2]) >= 1 && Number(m[2]) <= 12) {
+    return formatDate(Number(m[1]), Number(m[2]), 1);
+  }
+  m = base.match(/(\d{1,2})月/);
+  if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12) {
+    return formatDate(year, Number(m[1]), 1);
+  }
+
   return null;
 }
 
