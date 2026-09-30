@@ -34,9 +34,9 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-echo "== 前提パッケージの確認 (rsync) =="
+echo "== 前提パッケージの確認 (rsync / better-sqlite3のビルドに必要なツール一式) =="
 apt-get update -y
-apt-get install -y rsync
+apt-get install -y rsync build-essential python3
 
 echo "== Node.js のインストール確認 =="
 if ! command -v node >/dev/null 2>&1; then

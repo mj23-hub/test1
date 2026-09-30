@@ -50,12 +50,13 @@ sudo bash deploy/setup_ubuntu.sh
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git rsync unzip build-essential
+sudo apt install -y curl git rsync unzip build-essential python3
 ```
 
-`build-essential` は、`better-sqlite3` の依存する native モジュールのビルドが
-必要になった場合（多くの環境ではプリビルド済みバイナリが使われるため不要ですが、
-念のため）に備えたものです。
+`build-essential`/`python3` は `better-sqlite3` のインストール時に必要です。環境によっては
+プリビルド済みバイナリが提供されておらずソースからビルドされるため（`make: not found` のような
+エラーになります）、`npm ci`より前に必ず入れておいてください。`deploy/setup_ubuntu.sh` を使う場合は
+自動でインストールされます。
 
 ## 2. Node.js のインストール
 
