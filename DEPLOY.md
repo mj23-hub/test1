@@ -14,27 +14,43 @@
 - SSHでサーバーにログインでき、sudoが使えるユーザーがいること
 - （HTTPS化する場合）独自ドメインをサーバーのIPに向けてある
 
-## 0. 自動セットアップスクリプトを使う場合
+## 0. 自動セットアップスクリプトを使う場合（推奨）
 
-`deploy/setup.sh` に、以下1〜6の手順をまとめて実行するスクリプトを用意しています。
-サーバーにこのリポジトリをcloneした後、スクリプト冒頭の `DOMAIN_OR_IP` などの設定を
-編集してから実行してください。
+`deploy/setup_ubuntu.sh` に、以下1〜7の手順をまとめて実行するスクリプトを用意しています。
+VPSにアプリ一式（zipをFTPで転送して展開したもの、またはgit clone したもの）を置いた状態で、
+スクリプト冒頭の `DOMAIN_OR_IP` などの設定を編集してから実行してください。
+
+### zipをFTPでアップロードした場合
+
+FTPクライアントで `committee-attendance-server-ubuntu.zip` を `/tmp` などにアップロードした後、
+VPSにSSHログインして以下を実行します。
+
+```bash
+cd /tmp && unzip -o committee-attendance-server-ubuntu.zip
+# 必要であれば /tmp/committee-attendance-server/deploy/setup_ubuntu.sh の
+# DOMAIN_OR_IP 等を nano などで編集してから
+sudo bash /tmp/committee-attendance-server/deploy/setup_ubuntu.sh
+```
+
+`unzip` コマンドが無い場合は先に `sudo apt install -y unzip` を実行してください。
+
+### git cloneする場合
 
 ```bash
 git clone https://github.com/mj23-hub/test1.git
 cd test1
-# deploy/setup.sh の DOMAIN_OR_IP 等を編集してから
-sudo bash deploy/setup.sh
+# deploy/setup_ubuntu.sh の DOMAIN_OR_IP 等を編集してから
+sudo bash deploy/setup_ubuntu.sh
 ```
 
-内容を理解した上で使う場合のみ実行してください。以下は同じ内容を手動で行う手順です
-（自動セットアップが失敗した場合の切り分けにも使えます）。
+いずれの方法でも、内容を理解した上で使う場合のみ実行してください。以下は同じ内容を
+手動で行う手順です（自動セットアップが失敗した場合の切り分けにも使えます）。
 
 ## 1. サーバーの初期設定
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git rsync build-essential
+sudo apt install -y curl git rsync unzip build-essential
 ```
 
 `build-essential` は、`better-sqlite3` の依存する native モジュールのビルドが
@@ -62,6 +78,18 @@ sudo chown committee:committee /opt/committee-attendance
 ```
 
 ## 4. アプリの配置
+
+**zipをFTPでアップロードした場合:**
+
+```bash
+cd /tmp && unzip -o committee-attendance-server-ubuntu.zip
+sudo rsync -a --exclude 'node_modules' --exclude 'data' \
+  /tmp/committee-attendance-server/ /opt/committee-attendance/
+sudo chown -R committee:committee /opt/committee-attendance
+sudo -u committee bash -c "cd /opt/committee-attendance && npm ci --omit=dev"
+```
+
+**git cloneする場合:**
 
 ```bash
 sudo -u committee git clone https://github.com/mj23-hub/test1.git /opt/committee-attendance
@@ -148,6 +176,19 @@ sudo crontab -u committee -e
 ```
 
 ## 10. アップデート手順（コード更新時）
+
+**zipを再アップロードした場合:**
+
+```bash
+cd /tmp && unzip -o committee-attendance-server-ubuntu.zip
+sudo rsync -a --exclude 'node_modules' --exclude 'data' \
+  /tmp/committee-attendance-server/ /opt/committee-attendance/
+sudo chown -R committee:committee /opt/committee-attendance
+sudo -u committee bash -c "cd /opt/committee-attendance && npm ci --omit=dev"
+sudo systemctl restart committee-attendance
+```
+
+**git cloneしている場合:**
 
 ```bash
 cd /opt/committee-attendance

@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 # さくらのVPS（Ubuntu）向け セットアップスクリプト
 #
-# 使い方:
-#   1. 下の「設定」セクションを環境に合わせて編集する
-#   2. VPSに一般ユーザー(sudo可)でSSHログインし、このリポジトリを任意の場所にcloneする
-#   3. sudo bash deploy/setup.sh を実行する
+# 想定する使い方（zipをFTPでVPSへ転送した場合）:
+#   1. FTPで committee-attendance-server-ubuntu.zip を /tmp などにアップロード
+#   2. VPSにSSHログインし、以下を実行:
+#        cd /tmp && unzip -o committee-attendance-server-ubuntu.zip
+#        sudo bash /tmp/committee-attendance-server/deploy/setup_ubuntu.sh
+#      （実行前に、必要であれば下の「設定」セクションを編集してください）
 #
 # このスクリプトは以下を行います:
+#   - unzip/rsyncなど前提コマンドのインストール確認
 #   - Node.js LTS のインストール（NodeSource経由）
 #   - アプリ実行用の専用ユーザー作成（既存の場合はスキップ）
-#   - リポジトリを /opt/committee-attendance にコピーし npm ci --omit=dev
+#   - 展開したファイル一式を /opt/committee-attendance にコピーし npm ci --omit=dev
 #   - systemdサービスの登録・起動
 #   - nginxのインストールとリバースプロキシ設定
 #   - ufw（ファイアウォール）の設定
@@ -23,13 +26,17 @@ set -euo pipefail
 APP_USER="committee"
 APP_DIR="/opt/committee-attendance"
 DOMAIN_OR_IP="example.com"   # ドメイン、無ければサーバーのグローバルIP
-REPO_SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # このスクリプトがあるリポジトリ
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # このスクリプト（展開済みzip）の場所
 # ----------------------------------------------
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "root権限（sudo）で実行してください: sudo bash deploy/setup.sh" >&2
+  echo "root権限（sudo）で実行してください: sudo bash deploy/setup_ubuntu.sh" >&2
   exit 1
 fi
+
+echo "== 前提パッケージの確認 (rsync) =="
+apt-get update -y
+apt-get install -y rsync
 
 echo "== Node.js のインストール確認 =="
 if ! command -v node >/dev/null 2>&1; then
@@ -48,7 +55,7 @@ fi
 
 echo "== アプリ配置 ($APP_DIR) =="
 mkdir -p "$APP_DIR"
-rsync -a --exclude 'node_modules' --exclude 'data' "$REPO_SOURCE_DIR"/ "$APP_DIR"/
+rsync -a --exclude 'node_modules' --exclude 'data' "$SOURCE_DIR"/ "$APP_DIR"/
 mkdir -p "$APP_DIR/data"
 chown -R "$APP_USER":"$APP_USER" "$APP_DIR"
 
