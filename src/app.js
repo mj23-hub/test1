@@ -9,7 +9,9 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 *
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
+app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.use(express.urlencoded({ extended: true }));
@@ -454,6 +456,6 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.listen(PORT, () => {
-  console.log(`委員会出席カウントシステム起動: http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`委員会出席カウントシステム起動: http://${HOST}:${PORT}`);
 });

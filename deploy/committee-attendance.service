@@ -1,0 +1,25 @@
+[Unit]
+Description=Committee Attendance Counter (委員会出席カウントシステム)
+After=network.target
+
+[Service]
+Type=simple
+# デプロイ先に合わせて変更してください
+User=committee
+Group=committee
+WorkingDirectory=/opt/committee-attendance
+EnvironmentFile=-/opt/committee-attendance/deploy/committee-attendance.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+ExecStart=/usr/bin/node src/app.js
+Restart=on-failure
+RestartSec=5
+
+# 軽い権限サンドボックス（このアプリはWorkingDirectory配下のdata/にのみ書き込む）
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/committee-attendance/data
+
+[Install]
+WantedBy=multi-user.target

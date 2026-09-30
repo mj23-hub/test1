@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "毎月の委員会出席をカウントするWebシステム",
   "main": "src/app.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node src/app.js"
   },
