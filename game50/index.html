@@ -1,0 +1,1278 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ピカポン50</title>
+<style>
+:root{
+  --bg:#eef1f6; --ink:#1d2433; --muted:#5b6475; --card:#ffffff; --line:#d9dee8;
+  --body1:#1fb5a8; --body2:#11867c; --face:#14161c; --accent:#ff8a1f;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;min-height:100vh}
+.wrap{display:flex;gap:28px;justify-content:center;align-items:flex-start;padding:24px 16px;flex-wrap:wrap}
+h1{font-size:15px;margin:0}
+
+/* ===== device ===== */
+.devcol{display:flex;flex-direction:column;align-items:center;gap:12px;width:360px;max-width:100%}
+.device{width:100%;background:linear-gradient(160deg,var(--body1),var(--body2));border-radius:38px 38px 56px 56px;padding:18px 18px 22px;box-shadow:0 18px 40px rgba(10,60,55,.35),inset 0 2px 0 rgba(255,255,255,.35),inset 0 -6px 0 rgba(0,0,0,.15);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.top{display:flex;align-items:center;justify-content:space-between;padding:2px 10px 12px}
+.logo{font-weight:900;letter-spacing:.08em;color:#fff;font-size:20px;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.logo b{color:var(--accent);margin-left:4px;font-size:24px}
+.grille{display:grid;grid-template-columns:repeat(6,6px);gap:5px}
+.grille i{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.28)}
+.lamp{width:14px;height:14px;border-radius:50%;background:#3a3f4a;box-shadow:inset 0 2px 3px rgba(0,0,0,.5);transition:background .1s}
+.lamp.ok{background:#4dff88;box-shadow:0 0 12px #4dff88}
+.lamp.ng{background:#ff4d4d;box-shadow:0 0 12px #ff4d4d}
+.face{background:var(--face);border-radius:22px;padding:16px 16px 14px;box-shadow:inset 0 3px 10px rgba(0,0,0,.6)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ledbox{background:#1a0606;border-radius:8px;padding:6px 6px;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;border:2px solid #2a2d35}
+.ledbox svg{width:100%;height:auto;display:block}
+.seg{fill:#3a0b0b}
+.seg.on{fill:#ff2a1a;filter:drop-shadow(0 0 3px #ff3b2a)}
+body.bp .led.blink .seg.on{fill:#3a0b0b;filter:none}
+.sys{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.sysb{border:0;border-radius:8px;padding:7px 0;font-weight:800;font-size:11px;letter-spacing:.06em;cursor:pointer;color:#1d2433;background:linear-gradient(#f4f6fa,#cfd5df);box-shadow:0 3px 0 #8a93a3}
+.sysb.start{background:linear-gradient(#ffd08a,#ff8a1f);box-shadow:0 3px 0 #b85a00}
+.sysb.pressed,.ab.pressed{transform:translateY(2px);box-shadow:0 1px 0 #8a93a3}
+.pb{--c:#fff;position:relative;aspect-ratio:1;border:0;border-radius:12px;cursor:pointer;padding:0;
+  background:color-mix(in srgb,var(--c) 22%,#111);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 35%,#000),0 4px 0 #000;transition:transform .05s}
+.pb span{position:absolute;left:8px;bottom:5px;font-weight:800;font-size:14px;color:color-mix(in srgb,var(--c) 55%,#fff);opacity:.8}
+.pb.pressed{transform:translateY(3px);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 35%,#000),0 1px 0 #000}
+.pb.on, body:not(.bp) .pb.blink{background:radial-gradient(circle at 50% 45%,#fff 0,var(--c) 38%,color-mix(in srgb,var(--c) 75%,#000) 100%);box-shadow:0 0 22px var(--c),0 0 6px var(--c),inset 0 0 0 2px #fff8,0 4px 0 #000}
+.pb.on span, body:not(.bp) .pb.blink span{color:#000;opacity:.55}
+.pb.sel{outline:3px dashed #fff;outline-offset:3px}
+.k0{--c:#f2f2f2}.k1{--c:#b04cff}.k2{--c:#2f6bff}.k3{--c:#ff6fb5}.k4{--c:#22c55e}.k5{--c:#ff3b3b}.k6{--c:#ffd400}.k7{--c:#22d3ee}.k8{--c:#ff8a1f}.k9{--c:#a3e635}
+.abc{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.ab{border:0;border-radius:10px;height:40px;font-weight:900;font-size:16px;cursor:pointer;color:#1d2433;background:linear-gradient(#ffffff,#d3d9e3);box-shadow:0 4px 0 #7d8697}
+.bottom{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;color:#fff;font-weight:700;font-size:12px}
+.volb{width:30px;height:30px;border-radius:50%;border:0;font-weight:900;font-size:16px;cursor:pointer;background:#fff;color:var(--body2);box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.vol{display:flex;gap:3px;align-items:flex-end}
+.vol i{width:6px;background:rgba(255,255,255,.3);border-radius:2px}
+.vol i.on{background:#fff}
+
+.msgbox{width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-height:74px}
+#msg{font-size:15px;font-weight:700;line-height:1.5}
+#sub{font-size:13px;color:var(--muted);margin-top:4px;min-height:1.2em}
+.hint{font-size:12px;color:var(--muted);line-height:1.6;text-align:center}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;font-size:11px;font-family:inherit}
+
+/* ===== panel ===== */
+.panel{width:520px;max-width:100%;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.info .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.num{font-family:ui-monospace,Consolas,monospace;font-weight:900;color:#fff;background:#222;border-radius:6px;padding:2px 7px;font-size:15px}
+.info h2{font-size:20px;margin:0}
+.chip{font-size:12px;font-weight:800;color:#fff;border-radius:999px;padding:2px 10px}
+.pl{font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--muted)}
+.info p{margin:10px 0 0;font-size:14px;line-height:1.75;white-space:pre-line}
+.best{margin-top:10px;font-size:13px;color:var(--muted)}
+.best b{color:var(--ink)}
+.playbtn{margin-top:12px;border:0;border-radius:10px;padding:10px 18px;font-weight:800;font-size:14px;cursor:pointer;color:#fff;background:linear-gradient(#ffad5c,#ff8a1f);box-shadow:0 3px 0 #b85a00}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.list{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;max-height:520px;overflow:auto;padding-right:4px}
+.item{display:flex;align-items:center;gap:8px;border:0;background:none;text-align:left;padding:5px 6px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink);font-family:inherit}
+.item:hover{background:#f1f4f9}
+.item.cur{background:#fff1e3;outline:2px solid var(--accent)}
+.item .n{font-family:ui-monospace,Consolas,monospace;font-weight:800;color:#fff;border-radius:5px;padding:1px 5px;font-size:12px;min-width:26px;text-align:center}
+.item .b{margin-left:auto;font-size:11px;color:var(--muted);white-space:nowrap}
+@media (max-width:560px){.list{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="devcol">
+    <section class="device" aria-label="ゲーム機">
+      <div class="top">
+        <div class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="logo">PIKAPON<b>50</b></div>
+        <div class="lamp" id="lamp"></div>
+      </div>
+      <div class="face">
+        <div class="keys">
+          <div class="ledbox"><svg id="led" class="led" viewBox="0 0 124 96" aria-label="LED"></svg></div>
+          <button class="pb k0" data-k="0"><span>0</span></button>
+          <div class="sys">
+            <button class="sysb start" data-k="S">START</button>
+            <button class="sysb" data-k="R">RESET</button>
+          </div>
+          <button class="pb k1" data-k="1"><span>1</span></button>
+          <button class="pb k2" data-k="2"><span>2</span></button>
+          <button class="pb k3" data-k="3"><span>3</span></button>
+          <button class="pb k4" data-k="4"><span>4</span></button>
+          <button class="pb k5" data-k="5"><span>5</span></button>
+          <button class="pb k6" data-k="6"><span>6</span></button>
+          <button class="pb k7" data-k="7"><span>7</span></button>
+          <button class="pb k8" data-k="8"><span>8</span></button>
+          <button class="pb k9" data-k="9"><span>9</span></button>
+        </div>
+        <div class="abc">
+          <button class="ab" data-k="A">A</button>
+          <button class="ab" data-k="B">B</button>
+          <button class="ab" data-k="C">C</button>
+        </div>
+      </div>
+      <div class="bottom">
+        <span>SOUND</span>
+        <button class="volb" data-k="-" aria-label="音量を下げる">−</button>
+        <div class="vol" id="vol"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:18px"></i></div>
+        <button class="volb" data-k="+" aria-label="音量を上げる">＋</button>
+      </div>
+    </section>
+    <div class="msgbox"><div id="msg"></div><div id="sub"></div></div>
+    <div class="hint">キーボード：<kbd>0</kbd>〜<kbd>9</kbd> ボタン　<kbd>A</kbd><kbd>B</kbd><kbd>C</kbd>　<kbd>Enter</kbd> START　<kbd>Esc</kbd> RESET　<kbd>+</kbd><kbd>−</kbd> 音量</div>
+  </div>
+
+  <div class="panel">
+    <section class="card info" id="info"></section>
+    <section class="card">
+      <div class="row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h1>ゲームリスト（50種類）</h1></div>
+      <div class="cats" id="cats"></div>
+      <div class="list" id="list"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+"use strict";
+/* ================= utilities ================= */
+const $ = s => document.querySelector(s);
+const R = n => Math.floor(Math.random() * n);
+const pick = a => a[R(a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = R(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
+const pad2 = n => String(((Math.floor(n) % 100) + 100) % 100).padStart(2, '0');
+const now = () => performance.now();
+const DIG = '0123456789', N19 = '123456789';
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ================= run control / cancellation ================= */
+class Cancel extends Error {}
+let runId = 0;
+const pending = new Set();
+const listeners = new Set();
+const timers = new Set();
+function cancelAll() {
+  runId++;
+  for (const p of [...pending]) p.reject(new Cancel());
+  pending.clear(); listeners.clear();
+  for (const t of timers) clearInterval(t);
+  timers.clear();
+  clearSel();
+}
+function sleep(ms) {
+  return new Promise((res, rej) => {
+    const o = {};
+    const t = setTimeout(() => { pending.delete(o); res(); }, ms);
+    o.reject = e => { clearTimeout(t); rej(e); };
+    pending.add(o);
+  });
+}
+function idle() { return new Promise((res, rej) => { const o = { reject: rej }; pending.add(o); }); }
+/* wait for a key press. allowed: string of keys (null = any). returns key or null (timeout) */
+function key(allowed = null, timeout = Infinity) {
+  return new Promise((res, rej) => {
+    const o = {}; let t = null;
+    const fn = k => { if (allowed != null && !allowed.includes(k)) return; done(); res(k); };
+    const done = () => { pending.delete(o); listeners.delete(fn); if (t) clearTimeout(t); };
+    o.reject = e => { done(); rej(e); };
+    pending.add(o); listeners.add(fn);
+    if (timeout !== Infinity) t = setTimeout(() => { done(); res(null); }, Math.max(0, timeout));
+  });
+}
+function listen(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+function every(ms, fn) { const rid = runId; const t = setInterval(() => { if (rid !== runId) { clearInterval(t); return; } fn(); }, ms); timers.add(t); return () => { clearInterval(t); timers.delete(t); }; }
+function later(ms, fn) { const rid = runId; setTimeout(() => { if (rid === runId) fn(); }, ms); }
+
+/* key hold tracking (for long press) */
+const isDown = {}, downAt = {}, lastHold = {}; const relWaiters = {};
+function waitRelease(k) {
+  if (!isDown[k]) return Promise.resolve(lastHold[k] || 0);
+  return new Promise((res, rej) => { const o = { reject: rej }; pending.add(o); (relWaiters[k] = relWaiters[k] || []).push(d => { pending.delete(o); res(d); }); });
+}
+
+/* ================= lights ================= */
+const btnEls = {};
+document.querySelectorAll('[data-k]').forEach(b => btnEls[b.dataset.k] = b);
+const lights = Array(10).fill(0);
+function setL(i, s) { lights[i] = s; const el = btnEls[i]; el.classList.toggle('on', s === 1); el.classList.toggle('blink', s === 2); }
+function allOff() { for (let i = 0; i < 10; i++) setL(i, 0); }
+function flash(k, ms = 200, snd = true, tim = -1) { setL(k, 1); if (snd) note(k, Math.max(.12, ms / 1000), tim); later(ms, () => setL(k, 0)); }
+function sel(k) { btnEls[k].classList.add('sel'); }
+function clearSel() { document.querySelectorAll('.pb.sel').forEach(e => e.classList.remove('sel')); }
+setInterval(() => document.body.classList.toggle('bp'), 280);
+
+/* ================= LED (2 digit 7-seg) ================= */
+const SEG = { '0': 0x3F, '1': 0x06, '2': 0x5B, '3': 0x4F, '4': 0x66, '5': 0x6D, '6': 0x7D, '7': 0x07, '8': 0x7F, '9': 0x6F, '-': 0x40, ' ': 0, '_': 0x08,
+  'A': 0x77, 'b': 0x7C, 'C': 0x39, 'c': 0x58, 'd': 0x5E, 'E': 0x79, 'F': 0x71, 'G': 0x3D, 'H': 0x76, 'J': 0x1E, 'K': 0x75, 'L': 0x38, 'n': 0x54, 'o': 0x5C, 'P': 0x73, 'q': 0x67, 'r': 0x50, 't': 0x78, 'U': 0x3E, 'u': 0x1C, 'y': 0x6E, '=': 0x48 };
+const ledSvg = $('#led'); const segEls = [[], []]; const dpEls = [];
+(function buildLed() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const h = (x, y, l, w) => `${x},${y} ${x + w},${y - w} ${x + l - w},${y - w} ${x + l},${y} ${x + l - w},${y + w} ${x + w},${y + w}`;
+  const v = (x, y, l, w) => `${x},${y} ${x + w},${y + w} ${x + w},${y + l - w} ${x},${y + l} ${x - w},${y + l - w} ${x - w},${y + w}`;
+  const P = [h(10, 8, 32, 5), v(44, 10, 36, 5), v(44, 50, 36, 5), h(10, 88, 32, 5), v(8, 50, 36, 5), v(8, 10, 36, 5), h(10, 48, 32, 5)];
+  for (let d = 0; d < 2; d++) {
+    const g = document.createElementNS(ns, 'g'); g.setAttribute('transform', `translate(${10 + d * 58},0) skewX(-6) translate(6,0)`);
+    P.forEach(pts => { const p = document.createElementNS(ns, 'polygon'); p.setAttribute('points', pts); p.setAttribute('class', 'seg'); g.appendChild(p); segEls[d].push(p); });
+    const c = document.createElementNS(ns, 'circle'); c.setAttribute('cx', 56); c.setAttribute('cy', 88); c.setAttribute('r', 4.5); c.setAttribute('class', 'seg'); g.appendChild(c); dpEls.push(c);
+    ledSvg.appendChild(g);
+  }
+})();
+let ledCycleStop = null;
+function ledRaw(m1, m2, dp1 = false, dp2 = false) {
+  [m1, m2].forEach((m, d) => segEls[d].forEach((p, i) => p.classList.toggle('on', !!(m & (1 << i)))));
+  dpEls[0].classList.toggle('on', dp1); dpEls[1].classList.toggle('on', dp2);
+}
+function led(v) {
+  const s = typeof v === 'number' ? pad2(v) : String(v);
+  const ch = [];
+  for (const c of s) { if (c === '.' && ch.length) ch[ch.length - 1].dp = true; else ch.push({ c, dp: false }); }
+  while (ch.length < 2) ch.unshift({ c: ' ', dp: false });
+  const [a, b] = ch.slice(-2);
+  ledRaw(SEG[a.c] ?? 0, SEG[b.c] ?? 0, a.dp, b.dp);
+}
+function ledBlink(on) { ledSvg.classList.toggle('blink', on); }
+
+/* ================= messages ================= */
+function msg(t) { $('#msg').textContent = t; }
+function sub(t) { $('#sub').textContent = t || ''; }
+function lamp(kind) { const l = $('#lamp'); l.className = 'lamp ' + kind; clearTimeout(lamp.t); lamp.t = setTimeout(() => l.className = 'lamp', 450); }
+
+/* ================= sound ================= */
+let actx = null, master = null, vol = store.get('pk50-vol', 3);
+function ac() {
+  if (!actx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; actx = new C(); master = actx.createGain(); master.connect(actx.destination); applyVol(); }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function applyVol() { if (master) master.gain.value = [0, .25, .5, .75, 1][vol] * .45; document.querySelectorAll('#vol i').forEach((e, i) => e.classList.toggle('on', i < vol)); }
+function setVol(v) { vol = Math.max(0, Math.min(4, v)); store.set('pk50-vol', vol); applyVol(); }
+function osc(freq, dur = .2, { type = 'square', gain = .3, at = 0, attack = .005, release = .04, slide = 0, vib = 0, decay = false } = {}) {
+  const c = ac(); if (!c) return;
+  const t = c.currentTime + at;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, freq * slide), t + dur);
+  if (vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 6; lg.gain.value = vib; l.connect(lg).connect(o.frequency); l.start(t); l.stop(t + dur + .1); }
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(gain, t + attack);
+  if (decay) g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  else { g.gain.setValueAtTime(gain, t + Math.max(attack, dur - release)); g.gain.linearRampToValueAtTime(0, t + dur); }
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .05);
+}
+function noise(dur, { gain = .8, freq = 1200, at = 0 } = {}) {
+  const c = ac(); if (!c) return;
+  const t = c.currentTime + at, len = Math.floor(c.sampleRate * dur);
+  const buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2;
+  const s = c.createBufferSource(); s.buffer = buf;
+  const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(freq, t); f.frequency.exponentialRampToValueAtTime(60, t + dur);
+  const g = c.createGain(); g.gain.value = gain;
+  s.connect(f).connect(g).connect(master); s.start(t);
+}
+const NOTE = [246.94, 261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25, 587.33];
+const NOTE_NAME = ['シ(低)', 'ド', 'レ', 'ミ', 'ファ', 'ソ', 'ラ', 'シ', 'ド(高)', 'レ(高)'];
+const TIMBRE = ['オルガン', 'ギター', 'エレガント'];
+function note(k, dur = .3, tim = -1, at = 0) {
+  const f = NOTE[k];
+  if (tim === 0) { osc(f, dur, { type: 'sine', gain: .35, at }); osc(f * 2, dur, { type: 'square', gain: .06, at }); }
+  else if (tim === 1) { osc(f, Math.max(dur, .5), { type: 'sawtooth', gain: .3, decay: true, at }); osc(f * 2, .3, { type: 'triangle', gain: .12, decay: true, at }); }
+  else if (tim === 2) { osc(f, dur + .15, { type: 'triangle', gain: .4, vib: 4, at, attack: .03, release: .15 }); osc(f * 2, dur, { type: 'sine', gain: .08, at }); }
+  else osc(f * 2, dur, { type: 'square', gain: .2, at });
+}
+const S = {
+  pi: (at = 0) => osc(1760, .07, { gain: .22, at }),
+  pico: (at = 0) => { osc(1568, .06, { gain: .22, at }); osc(2093, .07, { gain: .22, at: at + .065 }); },
+  tick: () => osc(2400, .025, { gain: .18 }),
+  ok: () => { lamp('ok'); osc(1319, .13, { type: 'sine', gain: .4 }); osc(1047, .32, { type: 'sine', gain: .4, at: .14 }); },
+  ng: () => { lamp('ng'); osc(140, .5, { type: 'sawtooth', gain: .32 }); },
+  boom: () => { lamp('ng'); noise(1.3, { gain: 1.1, freq: 1800 }); osc(110, .7, { type: 'square', gain: .3, slide: .25 }); },
+  warn: () => { for (let i = 0; i < 6; i++) osc(i % 2 ? 880 : 660, .12, { at: i * .13, gain: .25 }); },
+  start: () => [523, 659, 784, 1047].forEach((f, i) => osc(f, .09, { at: i * .07, gain: .22 })),
+  q: () => { osc(988, .08, { gain: .22 }); osc(1319, .12, { gain: .22, at: .1 }); },
+  cheer: () => { noise(1.6, { gain: .55, freq: 5000 }); [784, 988, 1175, 1568].forEach((f, i) => osc(f, .12, { at: i * .09, gain: .2 })); },
+};
+function playMelody(seq, type = 'square', gain = .22, beat = .14) {
+  let t = 0;
+  for (const [f, b] of seq) { if (f) osc(f, b * beat * .92, { type, gain, at: t }); t += b * beat; }
+  return t * 1000;
+}
+const FANFARE = [
+  [[392, 2], [370, 2], [349, 2], [330, 6]],
+  [[523, 1], [659, 1], [784, 3]],
+  [[523, 1], [659, 1], [784, 1], [1047, 2], [0, 1], [784, 1], [1047, 4]],
+  [[784, 1], [784, 1], [784, 1], [784, 3], [622, 3], [698, 3], [784, 2], [698, 1], [784, 6], [0, 1], [1047, 1], [1047, 1], [1175, 1], [1319, 8]],
+];
+async function fanfare(rank) {
+  const ms = playMelody(FANFARE[rank], rank === 0 ? 'triangle' : 'square', .2, rank === 3 ? .12 : .15);
+  if (rank === 3) setTimeout(() => { try { if (vol > 0 && 'speechSynthesis' in window) { const u = new SpeechSynthesisUtterance('Congratulations!'); u.lang = 'en-US'; u.volume = vol / 4; speechSynthesis.speak(u); } } catch (e) {} }, ms);
+  await sleep(ms + 200);
+}
+/* 5 distinct sounds for the sound-pair game */
+const SFX5 = [
+  () => { osc(523, .1, { gain: .25 }); osc(659, .1, { gain: .25, at: .1 }); osc(784, .16, { gain: .25, at: .2 }); },
+  () => { for (let i = 0; i < 7; i++) osc(i % 2 ? 1760 : 1568, .045, { gain: .2, at: i * .05 }); },
+  () => osc(196, .45, { type: 'triangle', gain: .45, vib: 25 }),
+  () => osc(330, .38, { type: 'square', gain: .2, slide: 3 }),
+  () => osc(1400, .38, { type: 'triangle', gain: .4, slide: .3 }),
+];
+
+/* ================= common helpers for games ================= */
+const COLS = [[1, 4, 7], [2, 5, 8], [3, 6, 9]];
+const LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 5, 9], [3, 5, 7]];
+const COLOR_NAME = ['しろ', 'むらさき', 'あお', 'ピンク', 'みどり', 'あか', 'きいろ', 'みずいろ', 'オレンジ', 'きみどり'];
+const rc = k => k === 0 ? [-1, 1] : [Math.floor((k - 1) / 3), (k - 1) % 3];
+const adj = (k, incl0 = true) => range(incl0 ? 0 : 1, 9).filter(j => { if (j === k) return false; const [a, b] = rc(k), [c, d] = rc(j); return Math.abs(a - c) + Math.abs(b - d) === 1; });
+const mdist = (a, b) => { const [p, q] = rc(a), [r, s] = rc(b); return Math.abs(p - r) + Math.abs(q - s); };
+async function inputDigits(n, to = Infinity, { show = false, deadline = Infinity, snd = true } = {}) {
+  let s = '';
+  while (s.length < n) {
+    const t = Math.min(to, deadline - now());
+    if (t <= 0) return null;
+    const k = await key(DIG, t);
+    if (k === null) return null;
+    s += k; flash(+k, 150, false); if (snd) S.pi();
+    if (show) led(s.slice(-2).padStart(2, ' '));
+  }
+  return s;
+}
+function countdownLed(deadline, toLed = true, label = '残り') {
+  const upd = () => { const l = Math.max(0, deadline - now()) / 1000; if (toLed) led(pad2(Math.ceil(l))); sub(`${label} ${Math.ceil(l)} 秒`); };
+  upd(); return every(200, upd);
+}
+async function readyGo(n = 3) { for (let c = n; c >= 1; c--) { led(' ' + c); osc(880, .1, { gain: .22 }); await sleep(800); } osc(1760, .3, { gain: .25 }); led('  '); }
+async function flow(kind) {
+  const rows = [[7, 8, 9], [4, 5, 6], [1, 2, 3], [0]];
+  const seq = kind === 'up' ? rows : rows.slice().reverse();
+  for (let r = 0; r < 2; r++) for (const row of seq) { row.forEach(b => setL(b, 1)); osc(kind === 'up' ? 900 + r * 100 : 700 - r * 100, .05, { gain: .12 }); await sleep(110); row.forEach(b => setL(b, 0)); }
+}
+function timeLed(t) { const s = Math.floor(t), h = Math.floor((t - s) * 100); return [pad2(s) + '.', pad2(h)]; }
+
+/* ================= songs (public domain) ================= */
+const SONGS = [
+  { name: 'メリーさんのひつじ', s: '3 2 1 2 3 3 3- 2 2 2- 3 5 5- 3 2 1 2 3 3 3 3 2 2 3 2 1--' },
+  { name: 'むすんでひらいて', s: '3 3 2 1 1- 2- 3 3 2 1 1- 2- 3 3 2 1 2 3 1- 5 5 4 3 3 2 2- 5 5 4 3 3 2 2- 3 3 2 1 1- 2- 3 3 2 1 2 3 1-' },
+  { name: 'きらきら星', s: '1 1 5 5 6 6 5- 4 4 3 3 2 2 1- 5 5 4 4 3 3 2- 5 5 4 4 3 3 2- 1 1 5 5 6 6 5- 4 4 3 3 2 2 1-' },
+  { name: 'ちょうちょう', s: '5 3 3- 4 2 2- 1 2 3 4 5 5 5- 5 3 3 3 4 2 2 2 1 3 5 5 3 3 3- 2 2 2 2 2 3 4- 3 3 3 3 3 4 5- 5 3 3 3 4 2 2 2 1 3 5 5 1--' },
+  { name: 'ジングルベル', s: '3 3 3- 3 3 3- 3 5 1 2 3--- 4 4 4 4 4 3 3 3 3 2 2 3 2- 5- 3 3 3- 3 3 3- 3 5 1 2 3--- 4 4 4 4 4 3 3 3 5 5 4 2 1---' },
+].map(x => ({ name: x.name, notes: x.s.trim().split(/\s+/).map(t => ({ k: +t[0], b: t.length })) }));
+
+/* ================= mole engine ================= */
+async function moleGame({ total, keys, life, gap, burstFrom = null, warnAt = null }) {
+  let score = 0; const active = new Set();
+  listen(k => { if (active.has(k)) { active.delete(k); setL(+k, 0); score++; S.pico(); led(score); } });
+  led(0); let spawned = 0;
+  while (spawned < total) {
+    if (warnAt != null && spawned === warnAt) { msg('スピードアップ！'); S.warn(); await sleep(1000); }
+    const lf = life(spawned);
+    const n = burstFrom != null && spawned >= burstFrom ? 2 + R(2) : 1;
+    const free = shuffle(keys.split('').filter(k => !active.has(k)));
+    for (let j = 0; j < n && spawned < total; j++) { active.add(free[j]); setL(+free[j], 1); spawned++; }
+    sub(`出現 ${spawned} / ${total}　たたいた数 ${score}`);
+    const end = now() + lf;
+    while (now() < end && active.size) await sleep(15);
+    for (const k of active) setL(+k, 0); active.clear();
+    await sleep(gap(spawned));
+  }
+  return score;
+}
+
+/* ================= calc engine ================= */
+async function calcGame(gen, total = null) {
+  let score = 0; const dl = total ? Infinity : now() + 60000;
+  if (!total) countdownLed(dl, false);
+  for (let q = 1; total ? q <= total : true; q++) {
+    const Q = gen(q);
+    allOff(); led(Q.led); (Q.lit || []).forEach(b => setL(b, 1)); S.q();
+    msg(Q.text + '　= ?'); if (total) sub(`${q} / ${total} 問目　正解 ${score}`);
+    const s = await inputDigits(String(Q.ans).length, total ? 15000 : Infinity, { deadline: dl });
+    if (s === null) { if (!total) break; S.ng(); msg(`時間切れ！ 正解は ${Q.ans}`); await sleep(1500); continue; }
+    if (+s === Q.ans) { S.ok(); score++; await sleep(300); }
+    else { S.ng(); msg(`ざんねん！ 正解は ${Q.ans}`); await sleep(1500); }
+  }
+  return score;
+}
+
+/* ================= 50 games ================= */
+const CAT = { on: ['音感', '#e6007e'], me: ['記憶力', '#0096d6'], ha: ['判断力', '#e0a800'], su: ['推理力', '#8a3ab9'], sh: ['瞬発力', '#e60033'], ke: ['計算力', '#6aa800'], un: ['運だめし', '#f08300'] };
+const RANK_NAME = ['ビギナー', 'ナイス', 'エキスパート', 'マスター'];
+
+const GAMES = [
+/* 01 */ { t: 'じゆうに演奏', c: 'on', p: 1, d: '0〜9のボタンがドレミの音になります。好きなメロディーを自由に演奏しよう。\nA:オルガン　B:ギター　C:エレガント　で音色が変わります。\n0=シ(低) 1=ド 2=レ 3=ミ 4=ファ 5=ソ 6=ラ 7=シ 8=ド(高) 9=レ(高)',
+  run: async () => {
+    let tim = 0; led('01'); msg('0〜9で演奏しよう！ A/B/Cで音色チェンジ'); sub('音色：' + TIMBRE[tim]);
+    listen(k => { if (DIG.includes(k)) { flash(+k, 220, false); note(+k, .45, tim); } else if ('ABC'.includes(k)) { tim = 'ABC'.indexOf(k); led(['or', 'Gt', 'EL'][tim]); sub('音色：' + TIMBRE[tim]); S.pi(); } });
+    await idle();
+  } },
+/* 02 */ { t: '作曲して再生', c: 'on', p: 1, d: '0〜9で音、Bで休符を入力して曲を作ります（最大70音）。\n入力した直後にAを短く押すと半拍、1秒以上長押しすると2拍に変わります。\nCで自動演奏（演奏後は入力できません）。STARTで新しい曲を作れます。',
+  run: async () => {
+    const notes = []; let locked = false; const beat = 420;
+    led(0); msg('音を入力しよう（0〜9:音 B:休符 A:長さ C:再生）');
+    while (true) {
+      const k = await key('0123456789ABC');
+      if (k === 'C') {
+        if (!notes.length) { S.ng(); continue; }
+        locked = true; msg('♪ 自動演奏中…'); ledBlink(true);
+        for (const n of notes) { if (n.k >= 0) { setL(n.k, 1); note(n.k, n.len * beat / 1000 * .9, 0); } await sleep(n.len * beat); if (n.k >= 0) setL(n.k, 0); }
+        ledBlink(false); msg('Cでもう一度再生、STARTで新しい曲'); continue;
+      }
+      if (locked) { S.ng(); continue; }
+      if (DIG.includes(k)) { if (notes.length >= 70) { S.ng(); continue; } notes.push({ k: +k, len: 1 }); flash(+k, 220, false); note(+k, .3, 0); }
+      else if (k === 'B') { if (notes.length >= 70) { S.ng(); continue; } notes.push({ k: -1, len: 1 }); S.tick(); }
+      else if (k === 'A') { const d = await waitRelease('A'); if (!notes.length) { S.ng(); continue; } notes[notes.length - 1].len = d >= 1000 ? 2 : .5; S.pi(); sub(d >= 1000 ? '直前の音を2拍にしました' : '直前の音を半拍にしました'); }
+      led(notes.length); msg(`入力した数：${notes.length} / 70`);
+    }
+  } },
+/* 03 */ { t: '名曲レッスン', c: 'on', p: 1, d: '1〜5で曲を選びます（1:メリーさんのひつじ 2:むすんでひらいて 3:きらきら星 4:ちょうちょう 5:ジングルベル）。\nA：光るボタンを順に押して自分で演奏。テンポは自由！\nB：お手本の自動演奏（演奏中に0〜9で効果音）。\nC：音色チェンジ。',
+  run: async () => {
+    let song = 0, tim = 0;
+    const choose = () => { allOff(); range(1, 5).forEach(b => setL(b, 2)); led('  '); msg('1〜5で曲を選んでね'); sub(SONGS.map((s, i) => `${i + 1}:${s.name}`).join('  ')); };
+    choose();
+    while (true) {
+      const k = await key('0123456789ABC');
+      if (k === 'C') { tim = (tim + 1) % 3; S.pi(); sub('音色：' + TIMBRE[tim]); continue; }
+      if (!song) { if ('12345'.includes(k)) { song = +k; allOff(); led(song); msg(`「${SONGS[song - 1].name}」 A:ひいてみる  B:お手本  C:音色`); } continue; }
+      const sg = SONGS[song - 1];
+      if (k === 'A') {
+        msg('光るボタンを押して演奏しよう');
+        for (const n of sg.notes) {
+          setL(n.k, 1);
+          while (true) { const p = await key('0123456789C'); if (p === 'C') { tim = (tim + 1) % 3; sub('音色：' + TIMBRE[tim]); continue; } if (+p === n.k) break; S.tick(); }
+          setL(n.k, 0); note(n.k, .25 + n.b * .12, tim);
+        }
+        await sleep(500); S.ok(); await sleep(600); song = 0; choose();
+      } else if (k === 'B') {
+        msg('♪ お手本演奏中（0〜9で効果音）');
+        const un = listen(x => { if (DIG.includes(x)) { const f = [200, 300, 400, 600, 800, 1000, 1200, 1500, 1800, 2200][+x]; osc(f, .08, { type: 'triangle', gain: .25, slide: .5 }); } });
+        for (const n of sg.notes) { setL(n.k, 1); note(n.k, n.b * .33 * .9, tim); await sleep(n.b * 330); setL(n.k, 0); }
+        un(); await sleep(500); song = 0; choose();
+      }
+    }
+  } },
+/* 04 */ { t: 'さいごの音あて', c: 'on', p: 1, rank: [10, 25, 40], best: 'high', unit: '問', d: 'ロボットが音階を上がる（または下がる）ように演奏します。止まったら、最後に鳴った音のボタンを押そう。\n0(シ低)と9(レ高)はつながっていて、9→0、0→9と移ることもあります。\n1〜5問目は全部光る／6〜19問目は最初の音だけ光る／20問目からは光りません。\n3回まちがえるか50問でおしまい。5秒以内に答えてね。',
+  run: async () => {
+    let ok = 0, miss = 0;
+    for (let q = 1; q <= 50 && miss < 3; q++) {
+      msg(`${q}問目　最後の音はどれ？`); sub(`正解 ${ok}　ミス ${miss}/3`);
+      const len = 3 + R(5), dir = R(2) ? 1 : -1, s = R(10);
+      const seq = range(0, len - 1).map(i => ((s + dir * i) % 10 + 10) % 10);
+      await sleep(700);
+      for (let i = 0; i < seq.length; i++) { const k = seq[i]; const lit = q <= 5 || (q <= 19 && i === 0); if (lit) setL(k, 1); note(k, .28); await sleep(330); setL(k, 0); await sleep(40); }
+      const p = await key(DIG, 5000);
+      const ans = seq[seq.length - 1];
+      if (p !== null && +p === ans) { ok++; S.ok(); flash(ans, 400, false); }
+      else { miss++; S.ng(); setL(ans, 2); msg(`正解は ${ans}（${NOTE_NAME[ans]}）`); await sleep(1000); setL(ans, 0); }
+      led(ok); await sleep(500);
+    }
+    return ok;
+  } },
+/* 05 */ { t: '光と音のリレー', c: 'me', p: 1, rank: [5, 10, 16], best: 'high', unit: '問', d: 'ロボットが光らせたボタンの順番を覚えて、同じ順に押そう。\n1問ごとに光るボタンが1つずつ増えていきます。全20問。\n順番をまちがえたらゲームオーバー！',
+  run: async () => {
+    const seq = []; let score = 0; led(0);
+    for (let r = 1; r <= 20; r++) {
+      seq.push(R(10)); msg(`${r}問目　よく見て覚えよう`); await sleep(700);
+      for (const k of seq) { setL(k, 1); note(k, .3); await sleep(380); setL(k, 0); await sleep(110); }
+      msg('同じ順に押そう！');
+      for (const k of seq) { const p = await key(DIG, 5000); if (p === null || +p !== k) { S.boom(); setL(k, 2); await sleep(1200); return score; } flash(+p, 200); }
+      score = r; led(score); await sleep(300); S.ok();
+    }
+    return score;
+  } },
+/* 06 */ { t: '2人で光と音リレー', c: 'me', p: 2, d: '2人で交互に問題を作り合う対戦版。\nプレイヤー1は好きなボタンを1つ押します。\nプレイヤー2はその順番を押してから、新しいボタンを1つ追加。これを交互にくり返します。\n先にまちがえた（または10秒押さなかった）人の負け！',
+  run: async () => {
+    const seq = []; led(' 1'); msg('プレイヤー1：好きなボタンを1つ押してね');
+    const k0 = await key(DIG); seq.push(+k0); flash(+k0, 250);
+    let p = 2;
+    const lose = async who => { S.boom(); allOff(); await sleep(800); return { led: ' ' + who, text: `プレイヤー${who}の負け！ プレイヤー${3 - who}の勝ち！`, rank: 2, noBest: true }; };
+    while (seq.length < 50) {
+      await sleep(400); led(' ' + p); msg(`プレイヤー${p}：${seq.length}個の順番を押してから、1つ追加`);
+      for (const s of seq) { const x = await key(DIG, 10000); if (x === null || +x !== s) return lose(p); flash(+x, 200); }
+      sub('最後に新しいボタンを1つ！');
+      const x = await key(DIG, 10000); if (x === null) return lose(p);
+      seq.push(+x); flash(+x, 250); sub(''); await sleep(300); S.ok(); p = 3 - p;
+    }
+    return { led: '--', text: '引き分け！ 2人ともすごい！', rank: 3, noBest: true };
+  } },
+/* 07 */ { t: '数字おぼえチャレンジ', c: 'me', p: 1, rank: [3, 6, 9], best: 'high', unit: '問', d: 'LEDに2桁の数字が表示されます。その数字を10の位→1の位の順にボタンで入力しよう。\n正解するたびに、覚える数字が1つずつ増えていきます（前の数字も順番に表示されます）。\nまちがえるか10問クリアでおしまい。※LEDが消えてから入力してね。',
+  run: async () => {
+    const nums = []; let score = 0;
+    for (let r = 1; r <= 10; r++) {
+      nums.push(R(100)); msg(`${r}問目　${nums.length}個の数字を覚えよう`); await sleep(700);
+      for (const n of nums) { led(pad2(n)); S.pi(); await sleep(900); led('  '); await sleep(250); }
+      msg(`${nums.length * 2}ケタを順番に入力！`);
+      let i = 0;
+      for (const n of nums) for (const ch of pad2(n)) {
+        const k = await key(DIG, 8000);
+        if (k !== ch) { S.boom(); msg(`正解は ${nums.map(pad2).join(' ')}`); await sleep(1500); return score; }
+        flash(+k, 150, false); S.pi(); i++;
+      }
+      score = r; S.ok(); sub(`クリア ${score} 問`); await sleep(500);
+    }
+    return score;
+  } },
+/* 08 */ { t: 'まだ出てない数', c: 'me', p: 1, rank: [5, 10, 15], best: 'high', unit: '回', d: 'ロボットとプレイヤーが交互に 01〜30 の数を出していきます。\nロボットの数がLEDに出たら、まだ出ていない数を2桁で入力しよう（01〜09は0を先に）。\n一度出た数を入力したらゲームオーバー。最高15点！',
+  run: async () => {
+    const used = new Set(); let score = 0;
+    while (score < 15) {
+      const free = range(1, 30).filter(n => !used.has(n)); const r = pick(free); used.add(r);
+      await sleep(400); led(pad2(r)); S.q(); msg(`ロボット：${pad2(r)}　まだ出ていない数を入力！`);
+      const s = await inputDigits(2, 10000, { show: true });
+      if (s === null) { S.boom(); msg('時間切れ！'); await sleep(1000); return score; }
+      const n = +s; await sleep(200);
+      if (n < 1 || n > 30 || used.has(n)) { S.boom(); msg(n < 1 || n > 30 ? `${s} は範囲外！` : `${s} はもう出ています！`); await sleep(1500); return score; }
+      used.add(n); score++; S.ok(); sub(`${score} 点　出た数：${[...used].sort((a, b) => a - b).join(',')}`); await sleep(500);
+    }
+    return score;
+  } },
+/* 09 */ { t: '記号ペアさがし', c: 'me', p: 1, rank: [20, 12, 6], best: 'low', unit: '回ミス', d: 'ボタンを押すと、LEDにかくれた記号が表示されます。同じ記号のペアを見つけよう（神経衰弱）。\nまずは10個のボタンのうち4組のペアを探します。4組見つけると、消えた8個に新しい記号がかくされ、全部で5組のペアに。\n残った2個の記号は変わらないので、ヒントになります。ミスが少ないほど優秀！',
+  run: async () => {
+    const pool = []; const seen = new Set();
+    while (pool.length < 9) { const m = () => { let x = 0; const c = 2 + R(3); while (bc(x) < c) x |= 1 << R(7); return x; }; const s = [m(), m()]; const k = s.join(','); if (!seen.has(k)) { seen.add(k); pool.push(s); } }
+    function bc(x) { let c = 0; while (x) { c += x & 1; x >>= 1; } return c; }
+    const sym = Array(10); const btns = shuffle(range(0, 9)); const p1 = btns.slice(0, 8), rest = btns.slice(8);
+    shuffle([0, 0, 1, 1, 2, 2, 3, 3]).forEach((pi, i) => sym[p1[i]] = pool[pi]);
+    sym[rest[0]] = pool[4]; sym[rest[1]] = pool[5];
+    const alive = new Set(btns); alive.forEach(b => setL(b, 1));
+    let miss = 0, phase = 1, left = 4; led('  ');
+    msg('ボタンを2つ押して同じ記号を探そう');
+    while (true) {
+      sub(`ミス ${miss}　残りペア ${left}${phase === 1 ? '（前半）' : '（後半）'}`);
+      const a = +await key([...alive].join('')); ledRaw(...sym[a]); setL(a, 2); S.pi();
+      const b = +await key([...alive].filter(x => x !== a).join('')); ledRaw(...sym[b]); setL(b, 2); S.pi();
+      await sleep(750);
+      if (sym[a] === sym[b]) { S.ok(); alive.delete(a); alive.delete(b); setL(a, 0); setL(b, 0); left--; }
+      else { S.ng(); miss++; setL(a, 1); setL(b, 1); }
+      led('  '); await sleep(250);
+      if (phase === 1 && left === 0) {
+        phase = 2; left = 5;
+        shuffle([4, 5, 6, 6, 7, 7, 8, 8]).forEach((pi, i) => { sym[p1[i]] = pool[pi]; alive.add(p1[i]); });
+        msg('後半！ 新しい記号がかくされた（残りの2個はそのまま）'); await sleep(500); S.start(); alive.forEach(b => setL(b, 1));
+      } else if (phase === 2 && left === 0) return miss;
+    }
+  } },
+/* 10 */ { t: '音ペアさがし', c: 'me', p: 1, rank: [16, 10, 6], best: 'low', unit: '回ミス', d: '0〜9のボタンに5種類の効果音が2つずつかくされています。\nボタンを押すと音が鳴るので、同じ音が鳴るペアを2つずつ探そう。\n5組すべて見つけたらおしまい。ミスが少ないほど優秀！',
+  run: async () => {
+    const snd = shuffle([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]); const alive = new Set(range(0, 9)); alive.forEach(b => setL(b, 2));
+    let miss = 0, left = 5; led(0); msg('同じ音のペアを探そう');
+    while (left) {
+      sub(`ミス ${miss}　残りペア ${left}`);
+      const a = +await key([...alive].join('')); setL(a, 1); SFX5[snd[a]]();
+      const b = +await key([...alive].filter(x => x !== a).join('')); setL(b, 1); SFX5[snd[b]]();
+      await sleep(800);
+      if (snd[a] === snd[b]) { S.ok(); alive.delete(a); alive.delete(b); setL(a, 0); setL(b, 0); left--; }
+      else { S.ng(); miss++; setL(a, 2); setL(b, 2); }
+      led(miss); await sleep(350);
+    }
+    return miss;
+  } },
+/* 11 */ { t: '音のありかメモリー', c: 'me', p: 1, rank: [3, 6, 9], best: 'high', unit: '問', d: '1のボタンから順番に光って、それぞれ違う音が鳴ります。\nそのあと「ピッ」と鳴ってから、どれか1つの音だけがもう一度鳴ります。\nその音が鳴ったときに光っていたボタンを押そう。全10問、まちがえたらおしまい。\n（1〜2問目は2個、3〜5問目は3個、6〜8問目は4個、9〜10問目は5個）',
+  run: async () => {
+    const PENTA = [392, 440, 523, 587, 659, 784, 880, 1047];
+    let score = 0; led(0);
+    for (let q = 1; q <= 10; q++) {
+      const n = q <= 2 ? 2 : q <= 5 ? 3 : q <= 8 ? 4 : 5; const p = shuffle(PENTA).slice(0, n);
+      msg(`${q}問目　音とボタンを覚えよう`); await sleep(800);
+      for (let i = 0; i < n; i++) { setL(i + 1, 1); osc(p[i], .35, { type: 'triangle', gain: .45 }); await sleep(480); setL(i + 1, 0); await sleep(150); }
+      await sleep(400); osc(2200, .07, { gain: .2 }); await sleep(600);
+      const t = R(n); osc(p[t], .4, { type: 'triangle', gain: .45 }); msg('今の音はどのボタン？');
+      const k = await key(N19.slice(0, n), 6000);
+      if (k === null || +k !== t + 1) { S.boom(); setL(t + 1, 2); await sleep(1300); return score; }
+      score = q; S.ok(); flash(t + 1, 300, false); led(score); await sleep(400);
+    }
+    return score;
+  } },
+/* 12 */ { t: 'リズムで数カウント', c: 'ha', p: 1, rank: [10, 25, 40], best: 'high', unit: 'カウント', d: '最初にLEDに 02〜04 のどれかの数字が出ます。\nそのあと 1 からカウントが始まり、0のボタンがリズムに合わせて光ります。\n今の数が「指定の数の倍数」か「指定の数字を含む」ならC、それ以外はAを、リズムに合わせて押そう。\n例）3のとき：1(A) 2(A) 3(C) 4(A) 5(A) 6(C) … 13(C)\nまちがえるか押しそびれたらおしまい。50まで行けば完全クリア！',
+  run: async () => {
+    const N = 2 + R(3); led(pad2(N)); msg(`今回の数字は「${N}」！ 倍数か${N}を含む数ならC、ちがうならA`); await sleep(2500);
+    S.start(); await sleep(900);
+    const presses = []; listen(k => { if (k === 'A' || k === 'C') { presses.push({ k, t: now() }); } });
+    let interval = 1050;
+    for (let c = 1; c <= 50; c++) {
+      const tb = now(); led(pad2(c)); setL(0, 1); S.tick(); later(180, () => setL(0, 0)); sub(`カウント ${c}`);
+      await sleep(interval);
+      const lo = tb - 250, hi = tb + interval - 250;
+      const hit = presses.find(p => p.t >= lo && p.t < hi);
+      for (let i = presses.length - 1; i >= 0; i--) if (presses[i].t < hi) presses.splice(i, 1);
+      const exp = (c % N === 0 || String(c).includes(String(N))) ? 'C' : 'A';
+      if (!hit || hit.k !== exp) { S.boom(); msg(`${c} は ${exp} でした！`); await sleep(1200); return c - 1; }
+      interval = Math.max(700, interval - 8);
+    }
+    return 50;
+  } },
+/* 13 */ { t: '光の本数はどの列？', c: 'ha', p: 1, rank: [8, 14, 18], best: 'high', unit: '問', d: '1〜9のボタンが一瞬だけ光ります。左の列(1-4-7)・中央の列(2-5-8)・右の列(3-6-9)で、光った数はそれぞれ1個・2個・3個のどれかです。\nそのあとLEDに 01〜03 が出るので、その数だけ光った列を答えよう。\n左ならA、中央ならB、右ならC。全20問！',
+  run: async () => {
+    let score = 0; led(0);
+    for (let q = 1; q <= 20; q++) {
+      const counts = shuffle([1, 2, 3]); const lit = [];
+      COLS.forEach((col, i) => shuffle(col).slice(0, counts[i]).forEach(b => lit.push(b)));
+      msg(`${q}問目　よく見て！`); led('  '); await sleep(800); S.pi();
+      lit.forEach(b => setL(b, 1)); await sleep(Math.max(380, 950 - q * 25)); allOff(); await sleep(300);
+      const t = 1 + R(3); led(pad2(t)); msg(`${t}個光った列は？ A:左 B:中央 C:右`);
+      const ans = 'ABC'[counts.indexOf(t)]; const k = await key('ABC', 6000);
+      if (k === ans) { S.ok(); score++; } else { S.ng(); lit.forEach(b => setL(b, 1)); await sleep(1000); allOff(); }
+      sub(`正解 ${score} / ${q}`); await sleep(400);
+    }
+    return score;
+  } },
+/* 14 */ { t: '同じ形はどれ？', c: 'ha', p: 1, rank: [4, 7, 9], best: 'high', unit: '問', d: 'ボタンが光って3つの形を順番に見せます。よく覚えてね。\nそのあと問題の形が出ます。位置や向きは変わっていますが、何番目に見せた形と同じかを答えよう。\n1番目ならA、2番目ならB、3番目ならC。全10問！',
+  run: async () => {
+    const norm = cs => { const mr = Math.min(...cs.map(c => c[0])), mc = Math.min(...cs.map(c => c[1])); return cs.map(([r, c]) => [r - mr, c - mc]).sort((a, b) => a[0] - b[0] || a[1] - b[1]); };
+    const rot = cs => cs.map(([r, c]) => [c, -r]);
+    const canon = cs => { let best = null, cur = cs; for (let i = 0; i < 4; i++) { const s = JSON.stringify(norm(cur)); if (best === null || s < best) best = s; cur = rot(cur); } return best; };
+    const gen = size => { const set = [[R(3), R(3)]]; let guard = 0; while (set.length < size && guard++ < 200) { const [r, c] = pick(set); const d = pick([[1, 0], [-1, 0], [0, 1], [0, -1]]); const n = [r + d[0], c + d[1]]; if (n[0] < 0 || n[0] > 2 || n[1] < 0 || n[1] > 2) continue; if (set.some(x => x[0] === n[0] && x[1] === n[1])) continue; set.push(n); } return set; };
+    const place = cs => { let cur = cs; for (let i = R(4); i > 0; i--) cur = rot(cur); const n = norm(cur); const h = Math.max(...n.map(c => c[0])) + 1, w = Math.max(...n.map(c => c[1])) + 1; const dr = R(4 - h), dc = R(4 - w); return n.map(([r, c]) => [r + dr, c + dc]); };
+    const show = cs => cs.forEach(([r, c]) => setL(r * 3 + c + 1, 1));
+    let score = 0; led(0);
+    for (let q = 1; q <= 10; q++) {
+      const size = 4 + R(2); const shapes = []; const keys = new Set();
+      while (shapes.length < 3) { const s = gen(size); if (s.length < size) continue; const k = canon(s); if (!keys.has(k)) { keys.add(k); shapes.push(s); } }
+      msg(`${q}問目　3つの形を覚えよう`); await sleep(700);
+      for (let i = 0; i < 3; i++) { led(' ' + (i + 1)); S.pi(); show(shapes[i]); await sleep(1100); allOff(); await sleep(400); }
+      const t = R(3); let qs, tries = 0;
+      do { qs = place(shapes[t]); tries++; } while (tries < 15 && JSON.stringify(norm(qs)) === JSON.stringify(norm(shapes[t])) && JSON.stringify(qs.slice().sort()) === JSON.stringify(shapes[t].slice().sort()));
+      S.q(); led('??'.replace(/\?/g, '-')); show(qs); msg('この形は何番目？ A:1番目 B:2番目 C:3番目');
+      const k = await key('ABC', 10000); allOff();
+      if (k === 'ABC'[t]) { S.ok(); score++; } else { S.ng(); msg(`正解は ${t + 1} 番目`); show(shapes[t]); await sleep(1200); allOff(); }
+      led(score); await sleep(500);
+    }
+    return score;
+  } },
+/* 15 */ { t: '光らなかったボタン', c: 'ha', p: 1, rank: [4, 7, 9], best: 'high', unit: '問', d: '1問につき3回、0〜9のボタンが何か所か光ります。\n3回のうち一度も光らなかったボタンを全部押そう（1〜3個）。\nまちがえたり5秒以内に押さないと不正解。全10問！',
+  run: async () => {
+    let score = 0; led(0);
+    for (let q = 1; q <= 10; q++) {
+      const U = shuffle(range(0, 9)).slice(0, 1 + R(3)); const lit = range(0, 9).filter(x => !U.includes(x));
+      const fl = [[], [], []]; shuffle(lit).forEach((b, i) => fl[i % 3].push(b));
+      fl.forEach(f => { while (f.length < 4) { const x = pick(lit); if (!f.includes(x)) f.push(x); } });
+      msg(`${q}問目　光ったボタンを覚えよう`); await sleep(700);
+      for (const f of fl) { S.pi(); f.forEach(b => setL(b, 1)); await sleep(900); allOff(); await sleep(350); }
+      msg(`一度も光らなかったボタンを全部押そう（${U.length}個）`);
+      const need = new Set(U); let ok = true;
+      while (need.size) { const k = await key(DIG, 5000); if (k === null || !need.has(+k)) { ok = false; break; } need.delete(+k); setL(+k, 1); S.pi(); }
+      if (ok) { S.ok(); score++; await sleep(500); } else { S.ng(); allOff(); U.forEach(b => setL(b, 2)); await sleep(1400); }
+      allOff(); led(score); await sleep(300);
+    }
+    return score;
+  } },
+/* 16 */ { t: '2つ入れかえパズル', c: 'ha', p: 1, rank: [5, 10, 16], best: 'high', unit: '問', d: '1〜9のボタンが「点灯」「点滅」「消灯」の3種類で光っています。\n2つのボタンを入れかえると、タテ（またはヨコ）の3列がそれぞれ同じ種類でそろいます。入れかえる2つのボタンを押そう（順番はどちらでもOK）。\n1回の入れかえではそろわない問題のときは 0 を押してね。制限時間60秒！',
+  run: async () => {
+    const solved = b => { const rowOk = [0, 1, 2].every(r => b[r * 3 + 1] === b[r * 3 + 2] && b[r * 3 + 2] === b[r * 3 + 3]); const colOk = [1, 2, 3].every(c => b[c] === b[c + 3] && b[c + 3] === b[c + 6]); return rowOk || colOk; };
+    const swapOk = (b, i, j) => { if (b[i] === b[j]) return false; const c = b.slice(); [c[i], c[j]] = [c[j], c[i]]; return solved(c); };
+    const anySwap = b => { for (let i = 1; i <= 9; i++) for (let j = i + 1; j <= 9; j++) if (swapOk(b, i, j)) return true; return false; };
+    const genB = () => {
+      if (Math.random() < .7) {
+        while (true) { const perm = shuffle([0, 1, 2]); const b = [0]; const byCol = R(2); for (let k = 1; k <= 9; k++) { const r = Math.floor((k - 1) / 3), c = (k - 1) % 3; b[k] = perm[byCol ? c : r]; } const i = 1 + R(9); const cand = range(1, 9).filter(j => b[j] !== b[i]); const j = pick(cand); [b[i], b[j]] = [b[j], b[i]]; if (!solved(b)) return b; }
+      }
+      while (true) { const b = [0, ...shuffle([0, 0, 0, 1, 1, 1, 2, 2, 2])]; if (!solved(b) && !anySwap(b)) return b; }
+    };
+    const dl = now() + 60000; countdownLed(dl); let score = 0;
+    while (now() < dl) {
+      const b = genB(); for (let k = 1; k <= 9; k++) setL(k, b[k]); setL(0, 0);
+      msg('入れかえる2つを押そう（できないときは0）'); S.q();
+      const a = await key(DIG, dl - now()); if (a === null) break;
+      let ok;
+      if (a === '0') ok = !anySwap(b);
+      else { sel(+a); S.pi(); const c = await key(N19.replace(a, ''), dl - now()); clearSel(); if (c === null) break; ok = swapOk(b, +a, +c); if (ok) { [b[+a], b[+c]] = [b[+c], b[+a]]; for (let k = 1; k <= 9; k++) setL(k, b[k]); } }
+      if (ok) { S.ok(); score++; await sleep(500); } else { S.ng(); await sleep(1000); }
+      sub(`正解 ${score}`);
+    }
+    return score;
+  } },
+/* 17 */ { t: '一直線をつくれ', c: 'ha', p: 1, rank: [8, 14, 20], best: 'high', unit: '問', d: '1〜9のうち2つのボタンが点滅します。あと1つ光らせるとタテ・ヨコ・ナナメの一直線になるボタンを押そう。\nどこを押しても一直線にならないときは 0 を押してね。\n制限時間30秒、何問正解できるかな？',
+  run: async () => {
+    const pairsNo = []; for (let i = 1; i <= 9; i++) for (let j = i + 1; j <= 9; j++) if (!LINES.some(l => l.includes(i) && l.includes(j))) pairsNo.push([i, j]);
+    const dl = now() + 30000; countdownLed(dl); let score = 0;
+    while (now() < dl) {
+      let a, b, ans;
+      if (Math.random() < .7) { const l = shuffle(pick(LINES)); [a, b, ans] = l; } else { [a, b] = pick(pairsNo); ans = 0; }
+      allOff(); setL(a, 2); setL(b, 2); S.q(); msg('一直線になるボタンは？（ならないなら0）');
+      const k = await key(DIG, dl - now()); if (k === null) break;
+      if (+k === ans) { S.ok(); score++; if (ans) setL(ans, 1); await sleep(350); }
+      else { S.ng(); if (ans) setL(ans, 1); else setL(0, 1); await sleep(900); }
+      sub(`正解 ${score}`);
+    }
+    return score;
+  } },
+/* 18 */ { t: '変化を見のがすな', c: 'ha', p: 1, rank: [10, 20, 28], best: 'high', unit: '問', d: '0〜9のボタンが1つずつ光ったり消えたりします。変化したボタンを5秒以内に押そう。\n1〜10問目は点灯だけ、11問目からは点灯または消灯がランダムに起こります。\nまちがえたらゲームオーバー。全30問！',
+  run: async () => {
+    const lit = new Set(); led(0);
+    for (let q = 1; q <= 30; q++) {
+      msg(`${q}問目　変化したボタンを押そう`);
+      await sleep(500 + R(800));
+      let k;
+      const doOff = q > 10 && lit.size > 0 && (lit.size === 10 || R(2));
+      if (doOff) { k = pick([...lit]); lit.delete(k); setL(k, 0); } else { k = pick(range(0, 9).filter(x => !lit.has(x))); lit.add(k); setL(k, 1); }
+      osc(1000, .05, { gain: .12 });
+      const p = await key(DIG, 5000);
+      if (p === null || +p !== k) { S.boom(); setL(k, 2); msg(`変化したのは ${k} でした`); await sleep(1500); return q - 1; }
+      S.ok(); led(q);
+    }
+    return 30;
+  } },
+/* 19 */ { t: 'コインはどこだ', c: 'ha', p: 1, rank: [3, 6, 9], best: 'high', unit: '問', d: '最初に光ったボタンにコインがかくされます。そのあと2つずつボタンが光ります。\n・コインのあるボタンともう1つが光った → コインはもう1つの方へ移動！\n・コインのないボタン2つが光った → 移動しない。\n出題音が鳴ったら、コインのある場所を押そう。5問目からはコインが2枚になります（両方答えてね）。全10問、まちがえたらおしまい。',
+  run: async () => {
+    let score = 0; led(0);
+    for (let q = 1; q <= 10; q++) {
+      const nc = q <= 4 ? 1 : 2; let coins = shuffle(range(0, 9)).slice(0, nc);
+      allOff(); msg(`${q}問目　コイン${nc}枚の場所を覚えて！`); await sleep(500);
+      coins.forEach(c => setL(c, 1)); S.pi(); await sleep(1600); allOff(); await sleep(500);
+      const swaps = 3 + Math.min(q, 7), dur = Math.max(380, 850 - q * 45);
+      msg('光ったペアを追いかけよう');
+      for (let s = 0; s < swaps; s++) {
+        let a, b;
+        if (R(3) > 0) { a = pick(coins); b = pick(range(0, 9).filter(x => !coins.includes(x))); } else [a, b] = shuffle(range(0, 9)).slice(0, 2);
+        setL(a, 1); setL(b, 1); osc(700, .06, { gain: .15 }); await sleep(dur); setL(a, 0); setL(b, 0);
+        const ia = coins.includes(a), ib = coins.includes(b);
+        if (ia && !ib) coins = coins.map(c => c === a ? b : c); else if (ib && !ia) coins = coins.map(c => c === b ? a : c);
+        await sleep(180);
+      }
+      S.q(); msg(`コインはどこ？（${nc}か所）`);
+      const need = new Set(coins); let ok = true;
+      while (need.size) { const k = await key(DIG, 8000); if (k === null || !need.has(+k)) { ok = false; break; } need.delete(+k); setL(+k, 1); S.pi(); }
+      if (!ok) { S.boom(); allOff(); coins.forEach(c => setL(c, 2)); await sleep(1500); return score; }
+      score = q; S.ok(); led(score); await sleep(600);
+    }
+    return score;
+  } },
+/* 20 */ { t: '3つの宝さがし', c: 'su', p: 1, rank: [15, 8, 4], best: 'low', unit: '回', d: '0〜9のボタンに3つの宝がかくされています。好きなボタンを3つ押すと、当たった数でヒントの音が鳴ります。\n・0個 → ブー　・1個 → ピコ1回　・2個 → ピコ2回　・3個 → ファンファーレ！\nできるだけ少ない回数で全部見つけよう（99回まで）。',
+  run: async () => {
+    const T = shuffle(range(0, 9)).slice(0, 3); let tries = 0; led(0);
+    while (tries < 99) {
+      msg('ボタンを3つ押そう'); const ch = [];
+      while (ch.length < 3) { const k = +await key(DIG.split('').filter(x => !ch.includes(+x)).join('')); ch.push(k); setL(k, 1); S.pi(); }
+      tries++; led(tries); await sleep(400); allOff();
+      const h = ch.filter(x => T.includes(x)).length;
+      if (h === 3) { T.forEach(t => setL(t, 2)); return tries; }
+      if (h === 0) S.ng(); else for (let i = 0; i < h; i++) S.pico(i * .25);
+      sub(`${tries}回目：${ch.join(',')} → 当たり ${h} 個`); await sleep(900);
+    }
+    return 99;
+  } },
+/* 21 */ { t: '数字あてハイ＆ロー', c: 'su', p: 1, rank: [10, 7, 5], best: 'low', unit: '回', d: 'ロボットが 01〜99 のどれかの数を決めました。\n2桁の数を10の位→1の位の順に入力すると、正解がそれより大きければ光が上向きに、小さければ下向きに流れます。\nできるだけ少ない回数で当てよう！',
+  run: async () => {
+    const t = 1 + R(99); let tries = 0; led('--'); msg('2桁の数を入力しよう');
+    while (tries < 99) {
+      const s = await inputDigits(2, Infinity, { show: true }); tries++; const n = +s;
+      if (n === t) { S.ok(); return tries; }
+      sub(`${tries}回目：${s} → 正解はもっと${n < t ? '大きい ↑' : '小さい ↓'}`);
+      await flow(n < t ? 'up' : 'down');
+    }
+    return 99;
+  } },
+/* 22 */ { t: 'かくれた潜水艦', c: 'su', p: 1, rank: [3, 6, 9], best: 'high', unit: '隻', d: '1〜9のどこかに潜水艦がかくれています。チャンスは3回。\n・押したボタンに潜水艦 → 正解音2回！\n・押したボタンのタテかヨコの列にいる → ピコ3回＋その列が点滅\n・タテにもヨコにもいない → ピコ1回\nLED左は残りチャンス、右は見つけた数。10隻見つければクリア！',
+  run: async () => {
+    let score = 0; const CH = [0, 0x08, 0x48, 0x49];
+    for (let s = 1; s <= 10; s++) {
+      const sub_ = 1 + R(9); let ch = 3; msg(`${s}隻目をさがせ！`);
+      while (true) {
+        ledRaw(CH[ch], SEG[String(score % 10)]);
+        const k = await key(N19, 10000);
+        if (k === null) { S.boom(); setL(sub_, 2); await sleep(1500); return score; }
+        const p = +k; allOff();
+        if (p === sub_) { S.ok(); later(450, () => S.ok()); setL(p, 2); score++; await sleep(1200); allOff(); break; }
+        const [r1, c1] = rc(p), [r2, c2] = rc(sub_);
+        if (r1 === r2 || c1 === c2) { for (let i = 0; i < 3; i++) S.pico(i * .2); range(1, 9).filter(x => { const [r, c] = rc(x); return r === r1 || c === c1; }).forEach(x => setL(x, 2)); sub(`${p}：タテかヨコの列にいる！`); }
+        else { S.pico(); setL(p, 1); sub(`${p}：タテにもヨコにもいない`); }
+        ch--;
+        if (ch === 0) { await sleep(900); S.boom(); allOff(); setL(sub_, 2); msg(`潜水艦は ${sub_} にいました`); ledRaw(0, SEG[String(score % 10)]); await sleep(1500); return score; }
+        await sleep(300);
+      }
+    }
+    return score;
+  } },
+/* 23 */ { t: 'ロボットと逆を向け', c: 'su', p: 1, rank: [5, 7, 9], best: 'high', unit: '問', d: '5を中心に、上下左右（2・4・6・8）のボタンが「ジャン・ケン・ポン」のリズムで3回光ります。\n3回目のあとロボットは2・4・6・8のどれかを選びます。ロボットが選んでいないと思うボタンを押そう。\nロボットにはクセがあるかも…？ 全10問。',
+  run: async () => {
+    let prev = null, score = 0; led(0);
+    for (let q = 1; q <= 10; q++) {
+      msg(`${q}問目　リズムに合わせて…`); allOff(); await sleep(600); setL(5, 1);
+      for (let b = 0; b < 3; b++) { [2, 4, 6, 8].forEach(x => setL(x, 1)); osc(b < 2 ? 880 : 1320, .1, { gain: .22 }); await sleep(230); [2, 4, 6, 8].forEach(x => setL(x, 0)); if (b < 2) await sleep(350); }
+      const robot = prev !== null && Math.random() < .5 ? prev : pick([2, 4, 6, 8]);
+      msg('いまだ！ 2・4・6・8 のどれか');
+      const k = await key('2468', 2000); setL(5, 0);
+      if (k === null) { S.ng(); sub('時間切れ'); }
+      else { setL(+k, 1); setL(robot, 2); if (+k !== robot) { S.ok(); score++; sub(`ロボットは ${robot}　セーフ！`); } else { S.ng(); sub(`ロボットも ${robot}！`); } prev = +k; }
+      led(score); await sleep(1100);
+    }
+    return score;
+  } },
+/* 24 */ { t: '3桁の暗号', c: 'su', p: 1, rank: [12, 8, 5], best: 'low', unit: '回', d: '0〜9のうち、ちがう数字3つでできた3桁の暗号を当てよう。\n3つのボタンを順に押すとヒントが出ます。LEDの左＝数字も位置も合っている数、右＝数字だけ合っている数。\n音でも分かります（位置も合う→ピンポン、数字だけ→ピッ、どちらもなし→ブー）。\n例）暗号539に「359」→ 左1・右2。できるだけ少ない回数で！',
+  run: async () => {
+    const sec = shuffle(range(0, 9)).slice(0, 3); let tries = 0; led('--');
+    while (tries < 99) {
+      msg('3つの数字を順に押そう'); const g = [];
+      while (g.length < 3) { const k = +await key(DIG.split('').filter(x => !g.includes(+x)).join('')); g.push(k); setL(k, 1); S.pi(); }
+      await sleep(300); allOff(); tries++;
+      const hit = g.filter((x, i) => sec[i] === x).length, blow = g.filter((x, i) => sec[i] !== x && sec.includes(x)).length;
+      led(`${hit}${blow}`);
+      if (hit + blow === 0) S.ng(); else { for (let i = 0; i < hit; i++) { osc(1319, .1, { type: 'sine', gain: .35, at: i * .3 }); osc(1047, .15, { type: 'sine', gain: .35, at: i * .3 + .11 }); } for (let j = 0; j < blow; j++) S.pi(hit * .3 + j * .2); }
+      sub(`${tries}回目：${g.join('')} → 位置も合う ${hit}・数字だけ ${blow}`);
+      if (hit === 3) { await sleep(700); return tries; }
+      await sleep(900);
+    }
+    return 99;
+  } },
+/* 25 */ { t: 'ぜんぶ点灯パズル', c: 'su', p: 1, rank: [3, 6, 9], best: 'high', unit: '問', d: 'ボタンを押すと、そのボタンと上下左右のボタンの点灯・消灯が反転します。\n1〜9のボタンを全部点灯させよう！ 1問につき10手以内でクリアしないとゲームオーバー。\nLED左＝クリアした数、右＝今の手数。全10問。',
+  run: async () => {
+    const tog = (st, p) => [p, ...adj(p, false)].forEach(x => st[x] ^= 1);
+    let cleared = 0;
+    for (let q = 0; q < 10; q++) {
+      let st;
+      do { st = Array(10).fill(1); shuffle(range(1, 9)).slice(0, Math.min(1 + Math.floor(q / 2), 5)).forEach(p => tog(st, p)); } while (range(1, 9).every(i => st[i]));
+      const render = () => range(1, 9).forEach(i => setL(i, st[i] ? 1 : 0));
+      render(); S.q(); let moves = 0; led(`${cleared}0`); msg(`${q + 1}問目　全部点灯させよう（10手以内）`);
+      while (true) {
+        const p = +await key(N19); tog(st, p); render(); S.pi(); moves++; led(`${cleared}${moves % 10}`); sub(`手数 ${moves} / 10`);
+        if (range(1, 9).every(i => st[i])) { S.ok(); cleared++; await sleep(900); break; }
+        if (moves >= 10) { S.boom(); await sleep(1200); return cleared; }
+      }
+    }
+    return cleared;
+  } },
+/* 26 */ { t: '2人で三目ならべ', c: 'su', p: 2, d: '1〜9を3×3のマスに見立てた2人用の対戦です。\nLEDに表示された番号のプレイヤーが、空いているボタンを押します（プレイヤー1は点灯、プレイヤー2は点滅）。\n先にタテ・ヨコ・ナナメに3つ並べた方の勝ち！',
+  run: async () => {
+    const b = Array(10).fill(0); let p = 1;
+    for (let turn = 0; turn < 9; turn++) {
+      led(' ' + p); msg(`プレイヤー${p}の番（${p === 1 ? '点灯' : '点滅'}）`);
+      const k = +await key(N19.split('').filter(x => !b[+x]).join(''));
+      b[k] = p; setL(k, p === 1 ? 1 : 2); S.pi();
+      const w = LINES.find(l => l.every(x => b[x] === p));
+      if (w) { await sleep(400); allOff(); w.forEach(x => setL(x, 2)); return { led: ' ' + p, text: `プレイヤー${p}の勝ち！`, rank: 2, noBest: true }; }
+      p = 3 - p;
+    }
+    return { led: '--', text: '引き分け！', rank: 1, noBest: true };
+  } },
+/* 27 */ { t: '大きい数で勝負', c: 'su', p: 1, rank: [4, 6, 8], best: 'high', unit: '勝', d: 'プレイヤーとロボットが0〜9の数字を1回ずつ出し合い、大きい方が勝ち（同じならロボットの勝ち）。\n点滅しているボタンがまだ使える数字です。勝ったボタンは点灯、負けたボタンは消灯します。\n10回勝負して、何回勝てるかな？',
+  run: async () => {
+    const avail = new Set(range(0, 9)); const robot = shuffle(range(0, 9)); let wins = 0; led('  ');
+    for (let r = 0; r < 10; r++) {
+      avail.forEach(x => setL(x, 2)); msg(`${r + 1}回戦　数字を選ぼう`); sub(`勝ち ${wins}`);
+      const k = +await key([...avail].join('')); avail.delete(k); const rb = robot[r]; led(' ' + rb);
+      if (k > rb) { wins++; setL(k, 1); S.ok(); msg(`あなた ${k} vs ロボット ${rb} → 勝ち！`); } else { setL(k, 0); S.ng(); msg(`あなた ${k} vs ロボット ${rb} → 負け`); }
+      await sleep(1100);
+    }
+    return wins;
+  } },
+/* 28 */ { t: 'ブラックジャック', c: 'su', p: 1, d: 'ロボット（親）と1回勝負。カードの合計が21に近い方が勝ち、22以上はその時点で負け。\nJ・Q・Kは10、Aは1か11の好きな方（自動で有利な方）で数えます。\n①点滅する0を押すと親の1枚目が見えます。\n②1→2の順にボタンを押してカードを2枚引きます。\n③もっと引くなら次の番号のボタン、勝負するならA！',
+  run: async () => {
+    const deck = shuffle(range(0, 51).map(i => i % 13 + 1));
+    const lab = r => r === 1 ? ' A' : r === 10 ? '10' : r === 11 ? ' J' : r === 12 ? ' q' : r === 13 ? ' K' : ' ' + r;
+    const nm = r => r === 1 ? 'A' : r === 11 ? 'J' : r === 12 ? 'Q' : r === 13 ? 'K' : String(r);
+    const total = cs => { let s = cs.reduce((a, r) => a + Math.min(10, r), 0); if (cs.includes(1) && s + 10 <= 21) s += 10; return s; };
+    setL(0, 2); led('--'); msg('0を押すとロボットの1枚目が見えるよ');
+    await key('0'); setL(0, 1); const dealer = [deck.pop(), deck.pop()]; led(lab(dealer[0])); S.pi();
+    const player = []; let next = 1; setL(1, 2); msg('1を押して1枚目を引こう');
+    while (true) {
+      const keys = (next <= 9 ? String(next) : '') + (player.length >= 2 ? 'A' : '') + '0';
+      const k = await key(keys);
+      if (k === '0') { led(lab(dealer[0])); continue; }
+      if (k === 'A') break;
+      const c = deck.pop(); player.push(c); setL(next, 1); next++; led(lab(c)); S.pi();
+      const t = total(player);
+      sub(`あなたのカード：${player.map(nm).join(' ')}（合計 ${t}）　ロボット：${nm(dealer[0])} ＋ ？`);
+      if (t > 21) { await sleep(800); S.boom(); led(pad2(t)); return { rank: 0, text: `バースト！ 合計 ${t} で負け…`, noBest: true }; }
+      if (next <= 9 && player.length < 2) { setL(next, 2); msg(`${next}を押して2枚目を引こう`); }
+      else { if (next <= 9) setL(next, 2); msg(`合計 ${t}：${next <= 9 ? next + 'でもう1枚 / ' : ''}Aで勝負！`); }
+    }
+    for (let i = 1; i <= 9; i++) if (lights[i] === 2) setL(i, 0);
+    msg('ロボットがカードを引きます…'); await sleep(600); led(lab(dealer[1])); S.pi();
+    while (total(dealer) < 17) { await sleep(900); const c = deck.pop(); dealer.push(c); led(lab(c)); S.pi(); }
+    await sleep(900);
+    const pt = total(player), dt = total(dealer);
+    const res = `あなた ${pt}（${player.map(nm).join(' ')}） vs ロボット ${dt}（${dealer.map(nm).join(' ')}）`;
+    if (dt > 21 || pt > dt) return { led: pad2(pt), rank: pt === 21 && player.length === 2 ? 3 : 2, text: '勝ち！ ' + res, noBest: true };
+    if (pt === dt) return { led: pad2(pt), rank: 1, text: '引き分け ' + res, noBest: true };
+    return { led: pad2(pt), rank: 0, text: '負け… ' + res, noBest: true };
+  } },
+/* 29 */ { t: '体内時計チャレンジ', c: 'su', p: 1, best: 'low', unit: '秒差', d: '目標タイム（1:10秒 2:20秒 3:30秒）を選び、自分の感覚だけで時間を計ります。\n0を押すと 3・2・1 のカウントダウンのあと計測スタート。目標タイムになったと思ったらもう一度0！\n結果はLEDに「秒」と「100分の1秒」が交互に表示されます。誤差が小さいほど優秀！',
+  run: async () => {
+    [1, 2, 3].forEach(b => setL(b, 2)); led('--'); msg('目標タイムを選ぼう　1:10秒 2:20秒 3:30秒');
+    const k = +await key('123'); const T = k * 10; allOff(); led(pad2(T)); setL(0, 2); msg(`目標 ${T} 秒。0でスタート！`);
+    await key('0'); setL(0, 1); await readyGo(); setL(0, 0); msg(`${T}秒たったと思ったら0！`);
+    const t0 = now(); await key('0'); const t = (now() - t0) / 1000; const diff = Math.abs(t - T);
+    S.pi(); const rank = diff <= .1 ? 3 : diff <= .5 ? 2 : diff <= 1.5 ? 1 : 0;
+    return { score: Math.round(diff * 100) / 100, rank, ledCycle: timeLed(t), text: `${t.toFixed(2)} 秒（目標 ${T} 秒／誤差 ${diff.toFixed(2)} 秒）` };
+  } },
+/* 30 */ { t: 'ネコとネズミ', c: 'su', p: 1, rank: [20, 12, 7], best: 'low', unit: '手', d: 'あなたはネコ（点灯）、逃げるネズミは点滅しています。ボタン0は2の上のマスです。\nネコは今いるボタンのタテかヨコに1歩ずつしか動けません（ナナメは不可）。ネコが動くとネズミも動きます。\nネズミと同じ場所に動けばつかまえた！ できるだけ少ない手数で（50手まで）。',
+  run: async () => {
+    let cat = pick([7, 9]), mouse = 0, moves = 0;
+    const render = () => { allOff(); setL(cat, 1); setL(mouse, 2); };
+    render(); led(0); msg('ネコを動かそう（タテ・ヨコに1歩）');
+    while (moves < 50) {
+      const k = +await key(adj(cat).join('')); moves++; led(moves); cat = k; S.pi();
+      if (cat === mouse) { render(); setL(cat, 2); return moves; }
+      const cand = adj(mouse).filter(x => x !== cat);
+      if (cand.length && Math.random() > .25) {
+        if (Math.random() < .7) { const best = Math.max(...cand.map(x => mdist(x, cat))); mouse = pick(cand.filter(x => mdist(x, cat) === best)); } else mouse = pick(cand);
+      }
+      render(); osc(2600, .05, { type: 'triangle', gain: .15, slide: 1.4 }); sub(`${moves} 手目`);
+    }
+    return { score: 99, rank: 0, text: 'にげられた…（50手オーバー）', noBest: true };
+  } },
+/* 31 */ { t: 'モグラたたき', c: 'sh', p: 1, rank: [20, 35, 45], best: 'high', unit: '匹', d: '1〜9のボタンがランダムに1か所ずつ光っては消えます。光っているのがモグラ！\n光っている間にすばやく押してやっつけよう。後半は警告音のあとスピードアップ。\n出てくる50匹のうち、何匹やっつけられるかな？',
+  run: async () => { msg('光ったらすばやく押せ！'); await readyGo(); return moleGame({ total: 50, keys: N19, life: s => s < 25 ? 1050 - s * 10 : 700 - (s - 25) * 9, gap: s => 260 - s * 2, warnAt: 25 }); } },
+/* 32 */ { t: 'モグラたたき・ハード', c: 'sh', p: 1, rank: [40, 65, 85], best: 'high', unit: '匹', d: 'モグラたたきの上級編。0〜9のボタンを使い、最初から速い！\n後半は警告音のあとさらにスピードアップし、最後はモグラの大群（同時に2〜3匹）が出現。\n99匹のうち何匹やっつけられるかな？',
+  run: async () => { msg('光ったらすばやく押せ！'); await readyGo(); return moleGame({ total: 99, keys: DIG, life: s => s < 50 ? 760 - s * 4 : 560 - (s - 50) * 3, gap: () => 170, warnAt: 50, burstFrom: 78 }); } },
+/* 33 */ { t: 'すばやく数字入力', c: 'sh', p: 1, rank: [15, 25, 35], best: 'high', unit: '問', d: 'LEDに表示される2桁の数字を、10の位→1の位の順にすばやく押そう。\n正解しても不正解でも次々と出題されます。制限時間60秒で何問正解できるかな？',
+  run: async () => {
+    msg('LEDの数字をすばやく入力！'); await readyGo();
+    const dl = now() + 60000; countdownLed(dl, false); let score = 0;
+    while (true) { const n = pad2(R(100)); led(n); const s = await inputDigits(2, Infinity, { deadline: dl, snd: false }); if (s === null) break; if (s === n) { S.pico(); score++; } else S.ng(); msg(`正解 ${score}`); }
+    return score;
+  } },
+/* 34 */ { t: '10秒連打', c: 'sh', p: 1, rank: [40, 60, 80], best: 'high', unit: '回', d: '0〜9のどれか1つが光ります。そのボタンをひたすら連打しよう！\n最初に押した瞬間から10秒間のカウントがスタート。LEDに残り時間が表示されます。\n何回連打できるかな？',
+  run: async () => {
+    const k = R(10); setL(k, 1); led('10'); msg(`${k} のボタンを連打！（押したらスタート）`);
+    await key(String(k)); let count = 1; S.tick(); const dl = now() + 10000; countdownLed(dl);
+    while (true) { const left = dl - now(); if (left <= 0) break; const x = await key(String(k), left); if (x === null) break; count++; S.tick(); msg(`${count} 回`); }
+    S.boom(); setL(k, 0); return count;
+  } },
+/* 35 */ { t: 'バッティングセンター', c: 'sh', p: 1, rank: [3, 5, 8], best: 'high', unit: '本', d: 'ピッチャー（0）から、7・8・9のどれかに向かってボールが投げられます。まっすぐだけでなく曲がることも！\nボールが7に来たらA、8ならB、9ならCをタイミングよく押して打ち返そう。\nジャストミートでホームラン（0まで届く）、少しずれるとヒット。10球勝負！',
+  run: async () => {
+    const PATHS = [[0, 2, 5, 8], [0, 2, 5, 7], [0, 2, 5, 9], [0, 2, 4, 7], [0, 2, 6, 9], [0, 1, 4, 7], [0, 3, 6, 9]];
+    let hr = 0;
+    for (let ball = 1; ball <= 10; ball++) {
+      allOff(); led(ball); msg(`${ball}球目　かまえて…`); sub(`ホームラン ${hr} 本`); await sleep(900);
+      setL(0, 1); osc(300, .2, { type: 'triangle', gain: .2, slide: 2 }); await sleep(500 + R(700));
+      const path = pick(PATHS); const step = Math.max(140, 300 + R(180) - ball * 8);
+      let swing = null; const un = listen(k => { if ('ABC'.includes(k) && !swing) { swing = { k, t: now() }; osc(200, .05, { gain: .15 }); } });
+      for (let i = 0; i < path.length - 1; i++) { setL(path[i], 1); if (i) setL(path[i - 1], 0); await sleep(step); }
+      setL(path[path.length - 2], 0);
+      const target = path[path.length - 1]; setL(target, 1); const tS = now(); const win = step * 1.4;
+      while (now() - tS < win && !swing) await sleep(8);
+      un(); setL(target, 0);
+      let res = 'miss';
+      if (swing && swing.t >= tS && swing.k === 'ABC'[target - 7]) { const ratio = (swing.t - tS) / win; res = ratio >= .15 && ratio <= .6 ? 'hr' : 'hit'; }
+      if (res === 'hr') { hr++; for (const b of [target, target - 3, target - 6, 0]) { setL(b, 1); osc(600 + b * 50, .08, { gain: .2 }); await sleep(90); setL(b, 0); } S.cheer(); msg('ホームラン！！'); }
+      else if (res === 'hit') { for (const b of [target, target - 3, target - 6]) { setL(b, 1); await sleep(100); setL(b, 0); } S.pico(); msg('ヒット！'); }
+      else { S.ng(); msg(swing ? (swing.t < tS ? '早すぎ！ 空振り' : 'ミス！') : '見逃し…'); }
+      await sleep(900);
+    }
+    led(hr); return hr;
+  } },
+/* 36 */ { t: 'ゴールキーパー', c: 'sh', p: 1, rank: [12, 20, 26], best: 'high', unit: '本', d: '相手チームの3人が上の段（1・2・3）でパスを回し、ランダムにシュートしてきます。\nあなたはキーパー。ボールが下の段（7・8・9）に来て光った瞬間、そのボタンを押してキャッチしよう！\nシュートは全30本。早押しはダメ！',
+  run: async () => {
+    let saves = 0; led(0); msg('7・8・9に来たボールをキャッチ！'); await readyGo();
+    for (let s = 1; s <= 30; s++) {
+      allOff(); sub(`${s} / 30 本目　キャッチ ${saves}`);
+      let cur = 1 + R(3); const passes = 1 + R(3);
+      for (let p = 0; p < passes; p++) { setL(cur, 1); osc(500, .03, { gain: .1 }); await sleep(260); setL(cur, 0); cur = pick([1, 2, 3].filter(x => x !== cur)); }
+      const target = 7 + R(3); const mid = 4 + Math.round(((cur - 1) + (target - 7)) / 2); const step = Math.max(170, 360 - s * 6);
+      let first = null; const un = listen(k => { if ('789'.includes(k) && !first) first = { k: +k, t: now() }; });
+      setL(cur, 1); osc(400, .1, { gain: .2, slide: 2 }); await sleep(step); setL(cur, 0);
+      setL(mid, 1); await sleep(step); setL(mid, 0);
+      setL(target, 1); const tS = now();
+      while (now() - tS < step * 1.3 && !first) await sleep(8);
+      un(); setL(target, 0);
+      if (first && first.t >= tS && first.k === target) { saves++; S.pico(); flash(target, 250, false); }
+      else { S.ng(); }
+      led(saves); await sleep(450);
+    }
+    return saves;
+  } },
+/* 37 */ { t: '2人でおしずもう', c: 'sh', p: 2, d: '2・5・8の列が土俵の上の2人です。左の人は4のボタン、右の人は6のボタンを連打！\nたくさん連打した方が相手を押し出し、光の列が相手側へ移動します（4が強いと3・6・9、6が強いと1・4・7）。\n15秒たったとき、優勢な方の勝ち！（左＝1、右＝2 と表示）',
+  run: async () => {
+    let p = 0; const T = 6;
+    const render = () => { allOff(); const col = p >= T ? 2 : p <= -T ? 0 : 1; COLS[col].forEach(b => setL(b, 1)); };
+    render(); msg('左は4、右は6を連打！'); await readyGo();
+    osc(523, .15, { gain: .25 }); osc(784, .3, { gain: .25, at: .15 });
+    const dl = now() + 15000; countdownLed(dl);
+    listen(k => { if (k === '4') p++; else if (k === '6') p--; else return; render(); S.tick(); });
+    while (now() < dl) await sleep(30);
+    listeners.clear(); S.boom();
+    if (p > 0) return { led: ' 1', text: '左（4）の勝ち！', rank: 2, noBest: true };
+    if (p < 0) return { led: ' 2', text: '右（6）の勝ち！', rank: 2, noBest: true };
+    return { led: '--', text: '引き分け！', rank: 1, noBest: true };
+  } },
+/* 38 */ { t: '100メートル走', c: 'sh', p: 1, rank: [35, 25, 18], best: 'low', unit: '秒', d: '光っているボタンを交互に押して100m走ろう！ 1回押すと1m進みます。\n0〜49mは7と9、50〜79mは4と6、80〜99mは1と3、最後の1mは0。\n押しまちがえると転んで少しの間動けません。タイムは秒と100分の1秒が交互に表示されます。',
+  run: async () => {
+    let d = 0, alt = 0, lock = 0;
+    const pair = () => d >= 99 ? [0] : d >= 80 ? [1, 3] : d >= 50 ? [4, 6] : [7, 9];
+    const want = () => { const p = pair(); return p.length === 1 ? p[0] : p[alt % 2]; };
+    const render = () => { allOff(); setL(want(), 1); };
+    render(); msg('光っているボタンを交互に押そう！'); await readyGo(); render();
+    const t0 = now();
+    while (d < 100) {
+      const k = +await key(DIG);
+      if (now() < lock) continue;
+      if (k === want()) { d++; alt++; S.tick(); led(pad2(d % 100)); sub(`${d} m`); render(); }
+      else { S.ng(); lock = now() + 700; msg('転んだ！'); later(700, () => msg('走れ！')); }
+    }
+    const t = (now() - t0) / 1000; S.ok();
+    return { score: Math.round(t * 100) / 100, ledCycle: timeLed(t), text: `タイム ${t.toFixed(2)} 秒` };
+  } },
+/* 39 */ { t: '光をたやすな', c: 'sh', p: 1, rank: [10, 25, 45], best: 'high', unit: '秒', d: '0〜9のボタンを連打して全部光らせよう。消灯中のボタンは3回連打で点滅、点滅中は3回連打で点灯になります。\nでも光は時間がたつと「点灯→点滅→消灯」と弱まっていきます。\n全部光った瞬間から時間計測スタート。1か所でも消えたらおしまい。何秒もちこたえられるかな？',
+  run: async () => {
+    const lv = Array(10).fill(0), taps = Array(10).fill(0), dAt = Array(10).fill(0);
+    const ON_T = 6000, BL_T = 4500;
+    const render = () => range(0, 9).forEach(i => setL(i, lv[i] === 2 ? 1 : lv[i] === 1 ? 2 : 0));
+    let started = false, t0 = 0; led('--'); msg('連打して全部のボタンを光らせよう！');
+    listen(k => { if (!DIG.includes(k)) return; const i = +k; S.tick(); const n = now();
+      if (lv[i] === 2) { dAt[i] = Math.min(n + ON_T, dAt[i] + 900); return; }
+      taps[i]++; if (taps[i] >= 3) { taps[i] = 0; lv[i]++; dAt[i] = n + (lv[i] === 2 ? ON_T : BL_T); render(); } });
+    const startAt = now();
+    while (true) {
+      await sleep(40); const n = now();
+      for (let i = 0; i < 10; i++) if (lv[i] > 0 && n > dAt[i]) { lv[i]--; taps[i] = 0; dAt[i] = n + BL_T; render(); }
+      if (!started) {
+        if (lv.every(x => x > 0)) { started = true; t0 = n; S.pico(); later(150, () => S.pico()); msg('計測スタート！ 光をたやすな！'); }
+        else if (n - startAt > 60000) { S.boom(); return { score: 0, text: '60秒以内に全部光らせられなかった…' }; }
+      } else {
+        const t = (n - t0) / 1000; led(pad2(t)); sub(`${t.toFixed(1)} 秒`);
+        if (lv.some(x => x === 0)) { S.boom(); return { score: Math.round(t * 10) / 10, led: pad2(t), text: `${t.toFixed(1)} 秒もちこたえた！` }; }
+      }
+    }
+  } },
+/* 40 */ { t: '消防士ダッシュ', c: 'sh', p: 1, rank: [45, 30, 18], best: 'low', unit: '秒', d: '0〜9のボタンは「町」、光っているのは「火事」です。あなたは消防士！\n警告音のあと6か所で火事が発生。光っているボタンを連打して消そう（1か所あたり6〜9回）。\n時間がたつと火事はとなりに広がっていきます。全部消せたら成功、10か所全部が燃えたら失敗！',
+  run: async () => {
+    const hp = Array(10).fill(0);
+    const render = () => range(0, 9).forEach(i => setL(i, hp[i] >= 5 ? 1 : hp[i] > 0 ? 2 : 0));
+    led('--'); msg('火事だ！ 光っているボタンを連打して消そう'); S.warn(); await sleep(900);
+    shuffle(range(0, 9)).slice(0, 6).forEach(i => hp[i] = 6 + R(4)); render();
+    listen(k => { if (!DIG.includes(k)) return; const i = +k; if (hp[i] > 0) { hp[i]--; if (hp[i] === 0) S.pico(); else S.tick(); render(); } });
+    const t0 = now(); let nextSpread = t0 + 2600;
+    while (true) {
+      await sleep(40); const n = now(), t = (n - t0) / 1000; led(pad2(t)); sub(`${t.toFixed(1)} 秒`);
+      if (hp.every(x => x === 0)) { S.ok(); return { score: Math.round(t * 10) / 10, led: pad2(t), text: `消火成功！ ${t.toFixed(1)} 秒` }; }
+      if (hp.every(x => x > 0) || t > 99) { S.boom(); return { score: null, rank: 0, text: '町じゅうに火が広がってしまった…', noBest: true }; }
+      if (n >= nextSpread) {
+        const burning = range(0, 9).filter(i => hp[i] > 0);
+        const cand = [...new Set(burning.flatMap(i => adj(i)).filter(j => hp[j] === 0))];
+        const pool = cand.length ? cand : range(0, 9).filter(j => hp[j] === 0);
+        if (pool.length) { hp[pick(pool)] = 6 + R(4); osc(330, .15, { type: 'sawtooth', gain: .15 }); render(); }
+        nextSpread = n + Math.max(1500, 2600 - t * 40);
+      }
+    }
+  } },
+/* 41 */ { t: 'たし算チャレンジ', c: 'ke', p: 1, rank: [10, 18, 25], best: 'high', unit: '問', d: 'LEDの数字と、光っているボタンの数字をたし算しよう。答えをボタンで入力します。\n答えが2桁なら10の位→1の位の順に押してね。\n60秒間で何問解けるかな？（まちがえると少し待たされます）',
+  run: () => calcGame(() => { const a = 1 + R(9), b = 1 + R(9); return { led: ' ' + a, lit: [b], ans: a + b, text: `${a} ＋ ${b}` }; }) },
+/* 42 */ { t: 'ひき算チャレンジ', c: 'ke', p: 1, rank: [10, 18, 25], best: 'high', unit: '問', d: 'LEDの数字から、光っているボタンの数字をひき算しよう。答えをボタンで入力します。\n60秒間で何問解けるかな？',
+  run: () => calcGame(() => { const b = 1 + R(9), ans = R(10), a = ans + b; return { led: a, lit: [b], ans, text: `${a} − ${b}` }; }) },
+/* 43 */ { t: 'かけ算チャレンジ', c: 'ke', p: 1, rank: [10, 18, 25], best: 'high', unit: '問', d: 'LEDに2つの数字が表示されます。10の位の数字と1の位の数字をかけ算しよう。\n例）LEDが「35」なら 3×5＝15 なので、1→5 と押します。\n60秒間で何問解けるかな？',
+  run: () => calcGame(() => { const a = 1 + R(9), b = 1 + R(9); return { led: `${a}${b}`, ans: a * b, text: `${a} × ${b}` }; }) },
+/* 44 */ { t: 'わり算チャレンジ', c: 'ke', p: 1, rank: [10, 18, 25], best: 'high', unit: '問', d: 'LEDの数字を、光っているボタンの数字でわり算しよう（必ずわり切れます）。\n60秒間で何問解けるかな？',
+  run: () => calcGame(() => { const b = 2 + R(8), ans = 1 + R(9), a = b * ans; return { led: a, lit: [b], ans, text: `${a} ÷ ${b}` }; }) },
+/* 45 */ { t: '100からひき算', c: 'ke', p: 1, rank: [8, 15, 22], best: 'high', unit: '問', d: '100から、LEDに表示された数字をひき算しよう。\n例）LEDが「65」なら 100−65＝35 なので、3→5 と押します（答えが1桁なら1つだけ）。\n60秒間で何問解けるかな？',
+  run: () => calcGame(() => { const a = 10 + R(90); return { led: a, ans: 100 - a, text: `100 − ${a}` }; }) },
+/* 46 */ { t: 'れんぞくひき算', c: 'ke', p: 1, rank: [15, 22, 28], best: 'high', unit: '問', d: 'LEDの数字から、光っているボタンの数字を全部ひき算しよう。\nLEDの数字は1〜10問目が「10」、11〜20問目が「20」、21〜30問目が「30」。\n全30問（1問15秒以内）。何問正解できるかな？',
+  run: () => calcGame(q => { const base = q <= 10 ? 10 : q <= 20 ? 20 : 30; let ls; do { ls = shuffle(range(1, 9)).slice(0, q <= 10 ? 2 : 2 + R(2)); } while (ls.reduce((a, b) => a + b, 0) > base); const ans = base - ls.reduce((a, b) => a + b, 0); return { led: base, lit: ls, ans, text: `${base} − ${ls.sort((a, b) => a - b).join(' − ')}` }; }, 30) },
+/* 47 */ { t: 'スロットマシン', c: 'un', p: 1, best: 'high', unit: '枚', d: '手持ちのコイン20枚からスタート。99枚まで増やせるかな？\n【回す前】A:賭ける枚数を減らす　C:増やす　B:手持ち枚数を見る　0:スロットスタート\n【回転中】A:左の列(1-4-7)　B:中央の列(2-5-8)　C:右の列(3-6-9) を止める\nそろったライン：ナナメ×3倍　上段・下段のヨコ×4倍　中段のヨコ×5倍',
+  run: async () => {
+    let coins = 20, bet = 1, view = 0;
+    while (coins > 0 && coins < 99) {
+      bet = Math.max(1, Math.min(bet, coins));
+      const show = () => { if (view) { led(pad2(coins)); ledBlink(false); } else { led(pad2(bet)); ledBlink(true); } msg(`手持ち ${coins} 枚　賭け ${bet} 枚`); sub('A:減らす C:増やす B:表示切替 0:スタート'); };
+      setL(0, 2); show();
+      const k = await key('ABC0');
+      if (k === 'A') { bet = Math.max(1, bet - 1); view = 0; S.pi(); continue; }
+      if (k === 'C') { bet = Math.min(coins, bet + 1); view = 0; S.pi(); continue; }
+      if (k === 'B') { view ^= 1; S.pi(); continue; }
+      ledBlink(false); coins -= bet; led(pad2(coins)); setL(0, 0); msg('A・B・Cで列を止めよう！'); sub('');
+      const pos = [R(3), R(3), R(3)], stopped = [false, false, false], speed = [95, 125, 155].map(s => s + R(40)), nextAt = [0, 0, 0];
+      const draw = () => { for (let i = 1; i <= 9; i++) setL(i, 0); for (let c = 0; c < 3; c++) setL(pos[c] * 3 + c + 1, 1); };
+      const un = listen(x => { const i = 'ABC'.indexOf(x); if (i >= 0 && !stopped[i]) { stopped[i] = true; S.tick(); } });
+      while (!stopped.every(Boolean)) { const n = now(); for (let c = 0; c < 3; c++) if (!stopped[c] && n >= nextAt[c]) { pos[c] = (pos[c] + 1) % 3; nextAt[c] = n + speed[c]; osc(1200 + c * 200, .015, { gain: .05 }); } draw(); await sleep(12); }
+      un(); await sleep(300);
+      let mult = 0, line = null;
+      if (pos[0] === 1 && pos[1] === 1 && pos[2] === 1) { mult = 5; line = [4, 5, 6]; }
+      else if (pos.every(p => p === 0)) { mult = 4; line = [1, 2, 3]; }
+      else if (pos.every(p => p === 2)) { mult = 4; line = [7, 8, 9]; }
+      else if (pos[0] === 0 && pos[1] === 1 && pos[2] === 2) { mult = 3; line = [1, 5, 9]; }
+      else if (pos[0] === 2 && pos[1] === 1 && pos[2] === 0) { mult = 3; line = [7, 5, 3]; }
+      if (mult) { line.forEach(b => setL(b, 2)); coins = Math.min(99, coins + bet * mult); led(pad2(coins)); msg(`そろった！ ${mult}倍で ${bet * mult} 枚ゲット！`); await fanfare(1); await sleep(600); }
+      else { osc(300, .25, { type: 'triangle', gain: .25, slide: .6 }); msg('はずれ…'); await sleep(800); }
+      for (let i = 1; i <= 9; i++) setL(i, 0); view = 0;
+    }
+    return { score: coins, rank: coins >= 99 ? 3 : 0, text: coins >= 99 ? `コイン ${coins} 枚！ 大当たり！` : 'コインがなくなった…' };
+  } },
+/* 48 */ { t: 'ルーレット', c: 'un', p: 1, best: 'high', unit: '枚', d: '手持ちのコイン10枚からスタート。99枚まで増やせるかな？\n1〜9のボタンを押すとそのボタンにコインを1枚賭けます（何枚でも、何か所でもOK）。\nA:手持ち枚数　B:賭けている合計　C:賭けを取り消し　0:ルーレットスタート\n当たったら賭けた枚数の9倍がもらえます！',
+  run: async () => {
+    let coins = 10; const bets = Array(10).fill(0);
+    const tot = () => bets.reduce((a, b) => a + b, 0);
+    led(pad2(coins));
+    while (true) {
+      if (tot() === 0 && (coins <= 0 || coins >= 99)) break;
+      setL(0, tot() ? 2 : 0); msg(`手持ち ${coins} 枚　賭け ${tot()} 枚`); sub('1〜9:賭ける A:手持ち B:賭け合計 C:取り消し 0:スタート');
+      const k = await key('123456789ABC0');
+      if (N19.includes(k)) { if (coins > 0) { bets[+k]++; coins--; setL(+k, 2); led(pad2(bets[+k])); S.pi(); } else S.ng(); continue; }
+      if (k === 'A') { led(pad2(coins)); continue; }
+      if (k === 'B') { led(pad2(tot())); continue; }
+      if (k === 'C') { coins += tot(); bets.fill(0); for (let i = 1; i <= 9; i++) setL(i, 0); led(pad2(coins)); S.pi(); continue; }
+      if (!tot()) { S.ng(); continue; }
+      setL(0, 1); msg('ルーレットスタート！'); for (let i = 1; i <= 9; i++) setL(i, 0);
+      const steps = 27 + R(9); let cur = 1 + R(9);
+      for (let s = 0; s < steps; s++) { setL(cur, 0); cur = cur % 9 + 1; setL(cur, 1); osc(1500, .02, { gain: .12 }); await sleep(50 + Math.pow(s / steps, 3) * 330); }
+      await sleep(400);
+      if (bets[cur]) { const win = bets[cur] * 9; coins = Math.min(99, coins + win); S.ok(); msg(`${cur} に当たり！ ${win} 枚ゲット！`); setL(cur, 2); }
+      else { S.ng(); msg(`${cur} … はずれ`); }
+      led(pad2(coins)); bets.fill(0); await sleep(1600); for (let i = 0; i <= 9; i++) setL(i, 0);
+    }
+    return { score: coins, rank: coins >= 99 ? 3 : 0, text: coins >= 99 ? `コイン ${coins} 枚！ 大当たり！` : 'コインがなくなった…' };
+  } },
+/* 49 */ { t: '今日のラッキー占い', c: 'un', p: 1, d: '今日の運勢を占います（同じ日なら何度やっても同じ結果）。\nA：ラッキーカラー（光ったボタンの色）\nB：ラッキーナンバー（LEDの数字）\nC：ラッキー方角（光が流れていく向き）',
+  run: async () => {
+    const d = new Date(); let seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    for (let i = 0; i < 5; i++) rnd();
+    const color = Math.floor(rnd() * 10), num = 1 + Math.floor(rnd() * 99), dir = Math.floor(rnd() * 8);
+    const DIRS = [['北', [8, 5, 2, 0]], ['北東', [7, 5, 3]], ['東', [4, 5, 6]], ['南東', [1, 5, 9]], ['南', [0, 2, 5, 8]], ['南西', [3, 5, 7]], ['西', [6, 5, 4]], ['北西', [9, 5, 1]]];
+    led('--'); msg('A:ラッキーカラー　B:ラッキーナンバー　C:ラッキー方角');
+    while (true) {
+      const k = await key('ABC'); allOff(); led('--');
+      if (k === 'A') { setL(color, 1); sub(`今日のラッキーカラーは「${COLOR_NAME[color]}」！`); fanfare(1); }
+      else if (k === 'B') { led(pad2(num)); sub(`今日のラッキーナンバーは「${num}」！`); fanfare(1); }
+      else { sub(`今日のラッキー方角は「${DIRS[dir][0]}」！`); for (let r = 0; r < 4; r++) for (const b of DIRS[dir][1]) { setL(b, 1); osc(800 + r * 100, .04, { gain: .1 }); await sleep(130); setL(b, 0); } }
+    }
+  } },
+/* 50 */ { t: 'バクダンをさけろ', c: 'un', p: '1+', rank: [3, 6, 9], best: 'high', unit: '回', d: '0〜9のどれか1つにバクダンがしかけられています。安全だと思うボタンを押そう。\nセーフならピコ音が鳴ってボタンが消えます。バクダンを押したり、10秒以内に押さないとドカン！\nみんなで順番に押していく「バツゲーム」ルールでも盛り上がります。',
+  run: async () => {
+    const bomb = R(10); range(0, 9).forEach(b => setL(b, 1)); let safe = 0; const alive = new Set(range(0, 9)); led(0); msg('安全なボタンを押そう…');
+    while (true) {
+      const k = await key([...alive].join(''), 10000);
+      if (k === null || +k === bomb) { allOff(); setL(bomb, 2); S.boom(); msg(k === null ? '時間切れ… ドカン！' : 'ドカン！！'); await sleep(1300); return safe; }
+      alive.delete(+k); setL(+k, 0); S.pico(); safe++; led(safe);
+      if (safe === 9) { setL(bomb, 2); msg('バクダン以外を全部押せた！'); return safe; }
+    }
+  } },
+];
+GAMES.forEach((g, i) => g.no = i + 1);
+
+/* ================= framework: select / play / result ================= */
+let mode = 'select', selStr = '', curGame = null;
+const best = store.get('pk50-best', {});
+function rankOf(def, s) {
+  if (!def.rank || s == null) return null;
+  const [a, b, c] = def.rank;
+  if (def.best === 'low') return s <= c ? 3 : s <= b ? 2 : s <= a ? 1 : 0;
+  return s >= c ? 3 : s >= b ? 2 : s >= a ? 1 : 0;
+}
+function fmtScore(def, s) { return s == null ? '-' : `${s} ${def.unit || ''}`; }
+function toSelect() {
+  cancelAll(); mode = 'select'; selStr = ''; allOff(); ledBlink(false); led('--');
+  msg('ゲーム番号（2桁）を入力してSTART！'); sub('または右のリストから選んでね');
+  if (curGame) showInfo(curGame);
+}
+async function startGame(no) {
+  const def = GAMES[no - 1]; if (!def) return;
+  cancelAll(); curGame = def; mode = 'play'; selStr = pad2(no);
+  showInfo(def); allOff(); ledBlink(false); led(pad2(no)); msg(`${pad2(no)} ${def.t}`); sub('');
+  const rid = runId; S.start();
+  try {
+    await sleep(900); led('  ');
+    const res = await def.run();
+    if (rid !== runId || res === undefined) return;
+    await finish(def, res);
+  } catch (e) { if (!(e instanceof Cancel)) { console.error(e); msg('エラーが発生しました：' + e.message); } }
+}
+async function finish(def, res) {
+  if (typeof res === 'number') res = { score: res };
+  mode = 'result'; clearSel();
+  const score = res.score;
+  const rank = res.rank !== undefined ? res.rank : rankOf(def, score);
+  if (res.ledCycle) { let i = 0; led(res.ledCycle[0]); every(900, () => { i ^= 1; led(res.ledCycle[i]); }); }
+  else if (res.led !== undefined) led(res.led);
+  else if (score != null) led(pad2(score));
+  ledBlink(!res.ledCycle);
+  let newBest = false;
+  if (def.best && score != null && !res.noBest) {
+    const b = best[def.no];
+    if (b == null || (def.best === 'low' ? score < b : score > b)) { best[def.no] = score; store.set('pk50-best', best); newBest = true; renderList(); }
+  }
+  const head = res.text || (score != null ? `結果：${fmtScore(def, score)}` : '終了');
+  msg(head + (rank != null && def.rank ? `　【${RANK_NAME[rank]}】` : '') + (newBest ? '　★ベスト更新！' : ''));
+  sub('STARTでもう一度 ／ RESETでゲーム選択');
+  showInfo(def);
+  if (rank != null) await fanfare(rank);
+}
+
+/* ================= input ================= */
+function press(k) {
+  ac();
+  if (k === '+' || k === '-') { setVol(vol + (k === '+' ? 1 : -1)); osc(1760, .06, { gain: .22 }); return; }
+  if (k === 'S') {
+    if (mode === 'select') { const n = parseInt(selStr, 10); if (n >= 1 && n <= 50) startGame(n); else { S.ng(); msg('01〜50のゲーム番号を入力してね'); } }
+    else if (curGame) startGame(curGame.no);
+    return;
+  }
+  if (k === 'R') { S.pi(); toSelect(); return; }
+  if (mode === 'select') {
+    if (DIG.includes(k)) {
+      selStr = (selStr + k).slice(-2); led(selStr.padStart(2, ' ')); S.pi(); flash(+k, 120, false);
+      const n = parseInt(selStr, 10);
+      if (selStr.length === 2 && n >= 1 && n <= 50) { curGame = GAMES[n - 1]; showInfo(curGame); msg(`${selStr} ${curGame.t}　→ STARTで開始`); }
+    }
+    return;
+  }
+  for (const fn of [...listeners]) fn(k);
+}
+function down(k) {
+  if (isDown[k]) return;
+  isDown[k] = true; downAt[k] = now();
+  btnEls[k] && btnEls[k].classList.add('pressed');
+  press(k);
+}
+function up(k) {
+  if (!isDown[k]) return;
+  isDown[k] = false; lastHold[k] = now() - downAt[k];
+  btnEls[k] && btnEls[k].classList.remove('pressed');
+  const ws = relWaiters[k] || []; relWaiters[k] = []; ws.forEach(f => f(lastHold[k]));
+}
+document.querySelectorAll('[data-k]').forEach(b => {
+  const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (_) {} down(k); });
+  b.addEventListener('pointerup', () => up(k));
+  b.addEventListener('pointercancel', () => up(k));
+  b.addEventListener('lostpointercapture', () => up(k));
+  b.addEventListener('contextmenu', e => e.preventDefault());
+  b.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') e.preventDefault(); });
+});
+const KEYMAP = k => {
+  if (/^[0-9]$/.test(k)) return k;
+  const l = k.toLowerCase();
+  if (l === 'a' || l === 'b' || l === 'c') return l.toUpperCase();
+  if (k === 'Enter' || k === ' ') return 'S';
+  if (k === 'Escape' || k === 'Backspace') return 'R';
+  if (k === '+' || k === ';' || k === '=') return '+';
+  if (k === '-') return '-';
+  return null;
+};
+window.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = KEYMAP(e.key); if (!k) return;
+  e.preventDefault(); if (e.repeat) return; down(k);
+});
+window.addEventListener('keyup', e => { const k = KEYMAP(e.key); if (k) up(k); });
+window.addEventListener('blur', () => Object.keys(isDown).forEach(k => up(k)));
+
+/* ================= panel ================= */
+function showInfo(def) {
+  const [cn, cc] = CAT[def.c];
+  const b = best[def.no];
+  $('#info').innerHTML = `
+    <div class="row"><span class="num" style="background:${cc}">${pad2(def.no)}</span><h2>${def.t}</h2></div>
+    <div class="row" style="margin-top:8px"><span class="chip" style="background:${cc}">${cn}</span><span class="pl">${def.p === 2 ? '2人用' : def.p === '1+' ? '1人〜' : '1人用'}</span></div>
+    <p>${def.d}</p>
+    ${def.best ? `<div class="best">ベスト記録：<b>${b == null ? 'まだありません' : fmtScore(def, b)}</b>${def.rank ? `　（${def.best === 'low' ? '少ないほど優秀' : '多いほど優秀'}）` : ''}</div>` : ''}
+    <button class="playbtn" id="playbtn">▶ このゲームで遊ぶ</button>`;
+  $('#playbtn').onclick = () => { ac(); startGame(def.no); };
+  document.querySelectorAll('.item').forEach(e => e.classList.toggle('cur', +e.dataset.no === def.no));
+}
+function renderList() {
+  $('#cats').innerHTML = Object.values(CAT).map(([n, c]) => `<span class="chip" style="background:${c}">${n}</span>`).join('');
+  $('#list').innerHTML = GAMES.map(g => { const b = best[g.no]; return `<button class="item${curGame && curGame.no === g.no ? ' cur' : ''}" data-no="${g.no}"><span class="n" style="background:${CAT[g.c][1]}">${pad2(g.no)}</span><span>${g.t}</span>${b != null ? `<span class="b">★${b}</span>` : ''}</button>`; }).join('');
+  document.querySelectorAll('.item').forEach(e => e.onclick = () => {
+    const no = +e.dataset.no; ac(); toSelect(); curGame = GAMES[no - 1]; selStr = pad2(no); led(selStr); showInfo(curGame);
+    msg(`${selStr} ${curGame.t}　→ STARTで開始`); S.pi();
+  });
+}
+renderList();
+applyVol();
+curGame = GAMES[0];
+toSelect();
+</script>
+</body>
+</html>
